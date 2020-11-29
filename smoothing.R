@@ -5,6 +5,7 @@ library(fields)
 library(compositions)
 
 setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
 load("data_extraction.RData")
 
 # extract only one componet per patient
@@ -74,7 +75,7 @@ for (i in 1:n) {
 }
 
 
-load("smoothed_1600b_1D_1e3.RData")
+load("smooth_1600b_1D_1e3.RData")
 
 # compare original and smoothed data
 x11()
@@ -83,6 +84,15 @@ matplot(t_ax, t(curves), type = 'l', main = 'Original Data', ylim = c(-250,250))
 matplot(t_ax, t(pen_smooth0), type = 'l', main = 'Smoothed Data', ylim = c(-250,250))
 matplot(t_ax, t(pen_smooth1), type = 'l', main = 'Original Data - First Derivative')
 matplot(t_ax, t(pen_smooth2), type = 'l', main = 'Smoothed Data - Second Derivative')
+
+#for one curve
+i<-1
+x11()
+par(mfrow=c(2,2))
+matplot(t_ax, curves[i,], type = 'l', main = 'Original Data', ylim = c(-250,250))
+matplot(t_ax, pen_smooth0[i,], type = 'l', main = 'Smoothed Data', ylim = c(-250,250))
+matplot(t_ax, pen_smooth1[i,], type = 'l', main = 'Original Data - First Derivative')
+matplot(t_ax, pen_smooth2[i,], type = 'l', main = 'Smoothed Data - Second Derivative')
 
 x11()
 par(mfrow=c(1,2))
@@ -115,6 +125,16 @@ matplot(t_ax, t(curves), type = 'l', main = 'Original Data')
 matplot(t_ax, t(pen_smooth0), type = 'l', main = 'Smoothed Data')
 matplot(t_ax, t(pen_smooth1), type = 'l', main = 'Original Data - First Derivative')
 matplot(t_ax, t(pen_smooth2), type = 'l', main = 'Smoothed Data - Second Derivative')
+
+#for one curve
+i<-1
+x11()
+par(mfrow=c(2,2))
+matplot(t_ax, curves[i,], type = 'l', main = 'Original Data', ylim = c(-250,250))
+matplot(t_ax, pen_smooth0[i,], type = 'l', main = 'Smoothed Data', ylim = c(-250,250))
+matplot(t_ax, pen_smooth1[i,], type = 'l', main = 'Original Data - First Derivative')
+matplot(t_ax, pen_smooth2[i,], type = 'l', main = 'Smoothed Data - Second Derivative')
+
 
 x11()
 par(mfrow=c(1,2))
@@ -158,6 +178,15 @@ matplot(t_ax, t(pen_smooth1), type = 'l', main = 'Smoothed Data - First Derivati
 matplot(t_ax, t(pen_smooth2), type = 'l', main = 'Smoothed Data - Second Derivative')
 
 
+#for one curve
+i<-1
+x11()
+par(mfrow=c(2,2))
+matplot(t_ax, curves[i,], type = 'l', main = 'Original Data', ylim = c(-250,250))
+matplot(t_ax, pen_smooth0[i,], type = 'l', main = 'Smoothed Data', ylim = c(-250,250))
+matplot(t_ax, pen_smooth1[i,], type = 'l', main = 'Original Data - First Derivative')
+matplot(t_ax, pen_smooth2[i,], type = 'l', main = 'Smoothed Data - Second Derivative')
+
 
 # Penalize 2nd derivative
 
@@ -185,6 +214,17 @@ matplot(t_ax, t(curves), type = 'l', main = 'Original Data')
 matplot(t_ax, t(pen_smooth0), type = 'l', main = 'Smoothed Data')
 matplot(t_ax, t(pen_smooth1), type = 'l', main = 'Smoothed Data - First Derivative')
 matplot(t_ax, t(pen_smooth2), type = 'l', main = 'Smoothed Data - Second Derivative') 
+
+
+#for one curve
+i<-1
+x11()
+par(mfrow=c(2,2))
+matplot(t_ax, curves[i,], type = 'l', main = 'Original Data', ylim = c(-250,250))
+matplot(t_ax, pen_smooth0[i,], type = 'l', main = 'Smoothed Data', ylim = c(-250,250))
+matplot(t_ax, pen_smooth1[i,], type = 'l', main = 'Original Data - First Derivative')
+matplot(t_ax, pen_smooth2[i,], type = 'l', main = 'Smoothed Data - Second Derivative')
+
 
 
 
