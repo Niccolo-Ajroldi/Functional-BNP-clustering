@@ -28,7 +28,7 @@ x11()
 matplot(t_ax,t(curves), type='l', xlab='x', ylab='orig.func')
 
 
-# First Approach - Spline Regression-----------------------------------------
+# First Approach - Spline Regression with penalization-----------------------------------------
 
 ## Do spline regression (n_knots = 1600) with B-splines of order 4 and penalizing the 1st derivative
 ## Does it make sense? I know that my ideal curve should have two peaks. Would it be better to penalize
