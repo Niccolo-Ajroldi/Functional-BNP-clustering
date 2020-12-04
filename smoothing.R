@@ -6,6 +6,7 @@ library(compositions)
 
 setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
 setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 load("data_extraction.RData")
 
 # extract only one componet per patient
@@ -191,7 +192,6 @@ matplot(t_ax, pen_smooth2[i,], type = 'l', main = 'Smoothed Data - Second Deriva
 # Penalize 2nd derivative
 
 basis <- create.bspline.basis(range, nbasis = nbasis_, norder=m)
-
 functionalPar <- fdPar(fdobj=basis, Lfdobj=2, lambda=1e3)
 
 # Smoothing the dataset
@@ -248,8 +248,6 @@ for (i in 1:length(lambda))
   functionalPar = fdPar(fdobj=basis, Lfdobj=1, lambda=lambda[i])  
   gcv[i] = smooth.basis(t_ax, curve, functionalPar)$gcv
 }
-
-
 
 plot(log10(lambda),gcv)
 lambda[which.min(gcv)]
