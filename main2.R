@@ -17,11 +17,11 @@ library("tictoc")
 # L: number of basis
 # n_iter: number of iterations
 
-M <- 30
-n <- 26
+M <- 150
+n <- 22
 n_time <- 1600
-L <- 60
-n_iter <- 100
+L <- 40
+n_iter <- 1000
 
 #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
 K <- matrix(0,nrow=n_iter,ncol=n) 
@@ -31,22 +31,22 @@ V <- numeric(M)
 p <- rep(1/M, M) #vettore dei pesi inizializzato con un'uniforme
 
 # total mass parameter
-mass <- 100
+mass <- 10
 
 # prior parameters of mu
 m0 <- rep(0,L)
-xi <- 1000 # variance parameter da elicitare
+xi <- 10 # variance parameter da elicitare
 Lambda0 <- diag(xi,L)
 Lambda0_inv <- diag(1/xi,L) 
 
 # prior parameters of sigma^2
-a <- 1
-b <- 1
-  
+a <- 3
+b <- 100
+
 # prior parameters of phi_t
-c <- 1
-d <- 1
-  
+c <- 3
+d <- 100
+
 #inializzazione parametri
 mu <- matrix(0,M,n_time)
 #(MU)_jt: valore di mu_j(t)
@@ -64,7 +64,6 @@ phi <- matrix(0,M,n_time)
 #i.e. osservazione i all'istante j (j=1:1600)
 
 ##  
-L <- 60 # number of basis functions
 m <- 4  # basis spline order (1+degree)
 basis <- create.bspline.basis(rangeval=c(0,n_time), nbasis=L, norder=m)
 
@@ -76,21 +75,26 @@ basis2.t <- sapply(1:n_time, function(t) crossprod(basis.t[,t], basis.t[,t]))
 
 # smooth data
 load("smooth_60b_nopenalization.RData")
+X <- X[-c(12,13,19),]
+X<-X[-21,]
+X <- X/max(X) # TODO: capire se si può migliorare
 X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
 # save coefficients
 beta <- t(X_smoothed_f$fd$coefs)
 
 #### Initialization ####
 
+K[1,] <- sample(1:n)
+
 ## SIGMA2
-sigma2 <- rep(rinvgamma(n = 1, shape=a, scale=b),M)
+sigma2 <- rinvgamma(n = M, shape=a, scale=b)
 
 ## PHI
-phi <- matrix(rinvgamma(n=n_time, shape=c, scale=d), byrow=TRUE, nrow=M, ncol=n_time)
+phi <- matrix(rinvgamma(n=M*n_time, shape=c, scale=d), byrow=TRUE, nrow=M, ncol=n_time)
 
 ## MU
 # sample coefficients of basis projection
-mu_coef <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
+mu_coef <- matrix(mvrnorm(n=M, mu=m0, Sigma=Lambda0), byrow=TRUE, nrow=M, ncol=L)
 # evaluation of mu on the time grid
 mu <- matrix(mu_coef %*% basis.t, byrow=TRUE, nrow=M, ncol=n_time)
 
@@ -99,47 +103,14 @@ mu <- matrix(mu_coef %*% basis.t, byrow=TRUE, nrow=M, ncol=n_time)
 #C <- -1e7
 
 pb <- txtProgressBar(0, n_iter, style = 3)
+#pb <- txtProgressBar(0, n_iter, style = "ETA")
 
 tic()
 
 for(iter in 1:n_iter)
 {
   
-  #### STEP 1: K ####---------------------------------------------------------
-  
-  # (pi)j: probability that observation i belongs to cluster j
-  p_i <- numeric(M)
-  
-  # iterate over the observations
-  for(i in 1:n)
-  {
-    # iterate over kernels
-    for(j in 1:M)
-    {
-      p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) + (X[i,]-mu[j,])^2/(2*sigma2[j]*phi[j,]) ) # Nan
-    }
-    p_i <- p_i - max(p_i) # TODO: controllare
-    p_i <- exp(p_i)/sum(exp(p_i))
-    # cluster assignment at current iteration
-    K[iter,i] <- sample(1:M, size=1, prob=p_i)
-  }
-  
-  #### STEP 2: weights ####---------------------------------------------------------
-  
-  V[1] <- rbeta(1, 1 + sum(K[iter,] == 1), mass + sum(K[iter,] > 1))
-  p[1] <- V[1]
-  
-  for(l in 2:(M - 1))
-  {
-    V[l] <- rbeta(1, 1 + sum(K[iter,] == l), mass + sum(K[iter,] > j))
-    p[l] <- V[l] * prod(1 - V[1:(l - 1)])
-  }
-  
-  V[M] <- 1
-  p[M] <- V[M] * prod(1 - V[1:(M - 1)])
-  
-  
-  #### STEP 3: acceleration step ####---------------------------------------------------------
+  #### STEP 1: acceleration step ####--------------------------------------------
   
   # iterate over kernels
   for(j in 1:M)
@@ -203,13 +174,72 @@ for(iter in 1:n_iter)
     
   }
   
+  #### STEP 2: K ####---------------------------------------------------------
+  
+  # (pi)j: probability that observation i belongs to cluster j
+  p_i <- numeric(M)
+  
+  # iterate over the observations
+  for(i in 1:n)
+  {
+    # iterate over kernels
+    for(j in 1:M)
+    {
+      p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) + (X[i,]-mu[j,])^2/(2*sigma2[j]*phi[j,]) ) # Nan
+    }
+    p_i <- p_i - max(p_i) # TODO: controllare
+    p_i <- exp(p_i)/sum(exp(p_i))
+    # cluster assignment at current iteration
+    K[iter,i] <- sample(1:M, size=1, prob=p_i)
+  }
+  
+  #### STEP 3: weights ####---------------------------------------------------------
+  
+  V[1] <- rbeta(1, 1 + sum(K[iter,] == 1), mass + sum(K[iter,] > 1))
+  p[1] <- V[1]
+  
+  for(l in 2:(M - 1))
+  {
+    V[l] <- rbeta(1, 1 + sum(K[iter,] == l), mass + sum(K[iter,] > j))
+    p[l] <- V[l] * prod(1 - V[1:(l - 1)])
+  }
+  
+  V[M] <- 1
+  p[M] <- V[M] * prod(1 - V[1:(M - 1)])
+  
+  ##---------------------------------------------------------------------------------
+  
+  
   setTxtProgressBar(pb, iter)
-
+  
 }
 
 toc()
 
 View(K)
+
+save(K, file=paste0("K_", n_iter, "_iter_no21.RData"))
+
+ind <- 4993
+row <- K[ind,]
+unique(row)
+
+x11()
+matplot(1:1600,t(X), type='l', xlab='x', ylab='orig.func', col=row)
+
+s <- apply(K, 1, function(x) length(unique(x))>1)
+su <- unlist(s)
+rows <- which(s==TRUE)
+
+r <- sample(rows,10)
+for(i in r)
+{
+  x11()
+  matplot(1:1600,t(X), type='l', xlab='x', ylab='orig.func', col=K[i,])
+  legend("topright", legend = levels(factor(K[i,])) , col=unique(K[i,]))#, col=unique(K[i,]),cex=0.8)
+}
+
+graphics.off()
 
 
 
