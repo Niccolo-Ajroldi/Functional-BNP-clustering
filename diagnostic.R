@@ -31,3 +31,5 @@ est_part_BINDER <- function(clust, PSM){
   return(clust[which.min(res_loss),])
 }
 
+partition <- as.numeric(as.factor(est_part_BINDER(sample_MAR[[1]], PSM(K))))
+table(part_MAR, part_TRSB)
