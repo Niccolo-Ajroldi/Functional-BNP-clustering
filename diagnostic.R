@@ -1,9 +1,9 @@
 
 #### burnin ####
 
-save(K, file="K_falzo.RData")
+save(K, file="K_vero_after_burnin.RData")
 K_old <- K
-K <- K[2500:n_iter,]
+K <- K[4000:n_iter,]
 
 #### Number of clusters ####
 

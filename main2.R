@@ -12,7 +12,8 @@ library(MASS)
 library(tictoc)
 
 # n: number of observations
-# n_time: number of time points 
+# n_time: number of time points
+# step: step to takes on the timegrid
 # M: stick-breaking truncation
 # L: number of basis
 # n_iter: number of iterations
@@ -23,11 +24,11 @@ library(tictoc)
 #### DATA #### --------------------------------------------------------------------------
 
 n <- 23
-step <- 4
+step <- 8
 n_time <- 1600/step
 L <- 40
-m <- 4 
-time.grid <- 1:(1600/step) # TODO: da riscalare
+m <- 4
+time.grid <- 1:(1600/step) # TODO: RISCALARE LA TIME.GRID
 
   
 # load data and rescale
@@ -57,9 +58,8 @@ beta <- t(X_smoothed_f$fd$coefs)
 #### Algorithm parameters #### ------------------------------------------------------------------------------------
 
 M <- 150
-n_iter <- 5000
-mass <- 100
-
+n_iter <- 7000
+mass <- 500
 
 #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
 K <- matrix(0,nrow=n_iter,ncol=n) 
