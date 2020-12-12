@@ -1,5 +1,5 @@
 
-#### NUMBER OF CLUSTERS ####
+#### Number of clusters ####
 
 unique_clusters <- apply(K, 1, function(x) length(unique(x)))
 coda_import <- as.mcmc(unique_clusters)
@@ -22,6 +22,8 @@ PSM <- function(cls){
 
 heatmap(PSM(K), Rowv = NA, Colv = NA)
 
+#### Partition ####
+
 est_part_BINDER <- function(clust, PSM){
   res_loss <- c()
   for(i in 1:nrow(clust)){
@@ -31,5 +33,9 @@ est_part_BINDER <- function(clust, PSM){
   return(clust[which.min(res_loss),])
 }
 
-partition <- as.numeric(as.factor(est_part_BINDER(sample_MAR[[1]], PSM(K))))
-table(part_MAR, part_TRSB)
+partition <- as.numeric(as.factor(est_part_BINDER(K, PSM(K))))
+table(partition)
+
+
+matplot(t(X), col=partition, type='l')
+
