@@ -1,4 +1,10 @@
 
+#### burnin ####
+
+save(K, file="K_falzo.RData")
+K_old <- K
+K <- K[2500:n_iter,]
+
 #### Number of clusters ####
 
 unique_clusters <- apply(K, 1, function(x) length(unique(x)))
@@ -36,6 +42,14 @@ est_part_BINDER <- function(clust, PSM){
 partition <- as.numeric(as.factor(est_part_BINDER(K, PSM(K))))
 table(partition)
 
+#### plot ####
 
 matplot(t(X), col=partition, type='l')
 
+#### plot mu ####
+
+
+  
+  
+  
+  

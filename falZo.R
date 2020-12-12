@@ -20,9 +20,7 @@ M <- 150
 n <- 30
 n_time <- 200
 L <- 40
-n_iter <- 10000
-
-
+n_iter <- 5000
 
 
 data(kma.data)
@@ -61,11 +59,11 @@ V <- numeric(M)
 p <- rep(1/M, M) #vettore dei pesi inizializzato con un'uniforme
 
 # total mass parameter
-mass <- 10
+mass <- 100
 
 # prior parameters of mu
 m0 <- rep(0,L)
-xi <- 10 # variance parameter da elicitare
+xi <- 1 # variance parameter da elicitare
 Lambda0 <- diag(xi,L)
 Lambda0_inv <- diag(1/xi,L) 
 

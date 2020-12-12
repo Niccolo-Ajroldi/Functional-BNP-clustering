@@ -9,19 +9,57 @@ cat("\014")
 library(invgamma)
 library(fda)
 library(MASS)
-library("tictoc")
+library(tictoc)
 
-# M: number of clusters
-# n_time: number of time points 
 # n: number of observations
+# n_time: number of time points 
+# M: stick-breaking truncation
 # L: number of basis
 # n_iter: number of iterations
+# mass: total mass
+# m: spline order (1+degree)
+
+
+#### DATA #### --------------------------------------------------------------------------
+
+n <- 23
+step <- 4
+n_time <- 1600/step
+L <- 40
+m <- 4 
+time.grid <- 1:(1600/step) # TODO: da riscalare
+
+  
+# load data and rescale
+load("smooth_60b_nopenalization.RData") # X <- matrix n_obs x n_time
+X <- X[-c(12,13,19),]
+X <- X[, seq(1,1600,by=step)]
+X <- X/max(X) # TODO: capire se si può migliorare
+
+# basis 
+basis <- create.bspline.basis(rangeval=c(0,n_time), nbasis=L, norder=m)
+
+# basis evaluated on the time grid
+
+# basis.t: matrix: L x n_time of basis fuctions evaliated on the time time grid
+basis.t <- t(eval.basis(time.grid, basis))
+# basis2.t: n_time vector, b2[t] is the dot product between basis.t[,t] and itself
+basis2.t <- sapply(1:n_time, function(t) crossprod(basis.t[,t], basis.t[,t]))
+
+
+# Smoothing
+X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
+
+# save coefficients
+beta <- t(X_smoothed_f$fd$coefs)
+
+
+#### Algorithm parameters #### ------------------------------------------------------------------------------------
 
 M <- 150
-n <- 22
-n_time <- 1600
-L <- 40
-n_iter <- 1000
+n_iter <- 5000
+mass <- 100
+
 
 #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
 K <- matrix(0,nrow=n_iter,ncol=n) 
@@ -30,59 +68,40 @@ K <- matrix(0,nrow=n_iter,ncol=n)
 V <- numeric(M)
 p <- rep(1/M, M) #vettore dei pesi inizializzato con un'uniforme
 
-# total mass parameter
-mass <- 10
+
+#### HYPERPARAMETERS #### ----------------------------------------------------------------
 
 # prior parameters of mu
 m0 <- rep(0,L)
-xi <- 10 # variance parameter da elicitare
+xi <- 0.1 # variance parameter da elicitare
 Lambda0 <- diag(xi,L)
 Lambda0_inv <- diag(1/xi,L) 
 
 # prior parameters of sigma^2
 a <- 3
-b <- 100
+b <- 1
 
 # prior parameters of phi_t
 c <- 3
-d <- 100
+d <- 1
 
-#inializzazione parametri
+
+#### LATENT RV'S INITIALIZATION #### ----------------------------------------------------------------
+
 mu <- matrix(0,M,n_time)
-#(MU)_jt: valore di mu_j(t)
-#i.e. media del cluster j valutata all'istante t (t=1:1600)
+# [mu]it = mu_i(t)
+
 beta <- matrix(0,M,L)
 #(beta)_ij: i-th kernel, j-th beta
+
 sigma2 <- numeric(M)
 #(sigma2)_i: sigma^2 del cluster i-esimo
+
 phi <- matrix(0,M,n_time)
 #(PHI_t)_ij: phi_t del cluster i-esimo al time point j-esimo (j=1:1600)
 
-#dati
-# X_obs <- matrix n_obs x n_time
-#(X_obs)_ij: valore di X_i(j)
-#i.e. osservazione i all'istante j (j=1:1600)
 
-##  
-m <- 4  # basis spline order (1+degree)
-basis <- create.bspline.basis(rangeval=c(0,n_time), nbasis=L, norder=m)
-
-time.grid <- 1:1600 # TODO: da riscalare
-# basis.t: matrix: L x n_time of basis fuctions evaliated on the time time grid
-basis.t <- t(eval.basis(time.grid, basis))
-# basis2.t: n_time vector, b2[t] is the dot product between basis.t[,t] and itself
-basis2.t <- sapply(1:n_time, function(t) crossprod(basis.t[,t], basis.t[,t]))
-
-# smooth data
-load("smooth_60b_nopenalization.RData")
-X <- X[-c(12,13,19),]
-X<-X[-21,]
-X <- X/max(X) # TODO: capire se si può migliorare
-X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
-# save coefficients
-beta <- t(X_smoothed_f$fd$coefs)
-
-#### Initialization ####
+#### Initialization #### -------------------------------------------------------------------------
 
 K[1,] <- sample(1:n)
 
