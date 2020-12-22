@@ -24,7 +24,7 @@ library(tictoc)
 #### DATA #### --------------------------------------------------------------------------
 
 n <- 23
-step <- 8
+step <- 5
 n_time <- 1600/step
 L <- 40
 m <- 4
@@ -58,8 +58,8 @@ beta <- t(X_smoothed_f$fd$coefs)
 #### Algorithm parameters #### ------------------------------------------------------------------------------------
 
 M <- 150
-n_iter <- 7000
-mass <- 500
+n_iter <- 4000
+mass <- 1000
 
 #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
 K <- matrix(0,nrow=n_iter,ncol=n) 
@@ -73,7 +73,7 @@ p <- rep(1/M, M) #vettore dei pesi inizializzato con un'uniforme
 
 # prior parameters of mu
 m0 <- rep(0,L)
-xi <- 0.1 # variance parameter da elicitare
+xi <- 1 # variance parameter da elicitare
 Lambda0 <- diag(xi,L)
 Lambda0_inv <- diag(1/xi,L) 
 

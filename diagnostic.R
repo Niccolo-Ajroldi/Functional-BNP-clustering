@@ -1,9 +1,13 @@
 
+library(coda)
+devtools::install_github("sarawade/mcclust.ext")
+library(mcclust.ext)
+
 #### burnin ####
 
-save(K, file="K_vero_after_burnin.RData")
+save(K, file="K_vero.RData")
 K_old <- K
-K <- K[4000:n_iter,]
+K <- K[3000:n_iter,]
 
 #### Number of clusters ####
 
@@ -26,6 +30,7 @@ PSM <- function(cls){
   return(mat_out)
 }
 
+x11()
 heatmap(PSM(K), Rowv = NA, Colv = NA)
 
 #### Partition ####
@@ -44,6 +49,7 @@ table(partition)
 
 #### plot ####
 
+x11()
 matplot(t(X), col=partition, type='l')
 
 #### plot mu ####

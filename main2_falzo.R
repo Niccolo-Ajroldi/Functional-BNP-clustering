@@ -1,4 +1,6 @@
-#setwd('C:/Users/Utente/Desktop/Bayesian statistics/Functional-BNP-clustering')
+
+#setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
 setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 
 rm(list=ls())
@@ -6,34 +8,38 @@ cat("\014")
 
 library(invgamma)
 library(fda)
-library(fdakma)
 library(MASS)
-library("tictoc")
+library(tictoc)
 
-# M: number of clusters
-# n_time: number of time points 
 # n: number of observations
+# n_time: number of time points
+# step: step to takes on the timegrid
+# M: stick-breaking truncation
 # L: number of basis
 # n_iter: number of iterations
+# mass: total mass
+# m: spline order (1+degree)
 
-M <- 150
+
+#### DATA #### --------------------------------------------------------------------------
+
 n <- 30
-n_time <- 200
+step <- 1
+n_time <- 200/step
 L <- 40
-n_iter <- 5000
+m <- 4
+time.grid <- 1:(200/step) # TODO: RISCALARE LA TIME.GRID
 
 
+# load data and rescale
 data(kma.data)
-
-
 x <- kma.data$x # abscissas
 y0 <- kma.data$y0 # evaluations of original functions
 
-
-##  
-m <- 4  # basis spline order (1+degree)
+# basis 
 basis <- create.bspline.basis(rangeval=c(0,x[1,200]), nbasis=L, norder=m)
 
+# basis evaluated on the time grid
 
 # basis.t: matrix: L x n_time of basis fuctions evaliated on the time time grid
 basis.t <- t(eval.basis(x[1,], basis))
@@ -45,12 +51,17 @@ X_smoothed_f <- smooth.basis(argvals=x[1,], y=t(y0), fdParobj=basis)
 # save coefficients
 beta <- t(X_smoothed_f$fd$coefs)
 
-x11()
-matplot(X_smoothed_f$y,type = 'l')
+#x11()
+#matplot(X_smoothed_f$y,type = 'l')
 
 X<-t(X_smoothed_f$y)
 
 
+#### Algorithm parameters #### ------------------------------------------------------------------------------------
+
+M <- 150
+n_iter <- 4000
+mass <- 1000
 
 #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
 K <- matrix(0,nrow=n_iter,ncol=n) 
@@ -59,12 +70,12 @@ K <- matrix(0,nrow=n_iter,ncol=n)
 V <- numeric(M)
 p <- rep(1/M, M) #vettore dei pesi inizializzato con un'uniforme
 
-# total mass parameter
-mass <- 100
+
+#### HYPERPARAMETERS #### ----------------------------------------------------------------
 
 # prior parameters of mu
 m0 <- rep(0,L)
-xi <- 0.01 # variance parameter da elicitare
+xi <- 1 # variance parameter da elicitare
 Lambda0 <- diag(xi,L)
 Lambda0_inv <- diag(1/xi,L) 
 
@@ -76,24 +87,23 @@ b <- 1
 c <- 3
 d <- 1
 
-#inializzazione parametri
+
+#### LATENT RV'S INITIALIZATION #### ----------------------------------------------------------------
+
 mu <- matrix(0,M,n_time)
-#(MU)_jt: valore di mu_j(t)
-#i.e. media del cluster j valutata all'istante t (t=1:1600)
+# [mu]it = mu_i(t)
+
 beta <- matrix(0,M,L)
 #(beta)_ij: i-th kernel, j-th beta
+
 sigma2 <- numeric(M)
 #(sigma2)_i: sigma^2 del cluster i-esimo
+
 phi <- matrix(0,M,n_time)
 #(PHI_t)_ij: phi_t del cluster i-esimo al time point j-esimo (j=1:1600)
 
-#dati
-# X_obs <- matrix n_obs x n_time
-#(X_obs)_ij: valore di X_i(j)
-#i.e. osservazione i all'istante j (j=1:1600)
 
-
-#### Initialization ####
+#### Initialization #### -------------------------------------------------------------------------
 
 K[1,] <- sample(1:n)
 
@@ -117,8 +127,6 @@ pb <- txtProgressBar(0, n_iter, style = 3)
 #pb <- txtProgressBar(0, n_iter, style = "ETA")
 
 tic()
-
-probabilities<-list()
 
 for(iter in 1:n_iter)
 {
@@ -190,27 +198,21 @@ for(iter in 1:n_iter)
   #### STEP 2: K ####---------------------------------------------------------
   
   # (pi)j: probability that observation i belongs to cluster j
-  
-  prob<-matrix(0, nrow = n, ncol = M)
+  p_i <- numeric(M)
   
   # iterate over the observations
   for(i in 1:n)
   {
-    p_i <- numeric(M)
     # iterate over kernels
     for(j in 1:M)
     {
       p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) + (X[i,]-mu[j,])^2/(2*sigma2[j]*phi[j,]) ) # Nan
     }
-    
     p_i <- p_i - max(p_i) # TODO: controllare
     p_i <- exp(p_i)/sum(exp(p_i))
     # cluster assignment at current iteration
     K[iter,i] <- sample(1:M, size=1, prob=p_i)
-    prob[i,] <- p_i
   }
-  
-  probabilities[[iter]] <- prob
   
   #### STEP 3: weights ####---------------------------------------------------------
   
@@ -234,3 +236,32 @@ for(iter in 1:n_iter)
 }
 
 toc()
+
+View(K)
+
+save(K, file=paste0("K_", n_iter, "_iter_FDAKMA.RData"))
+
+ind <- 4993
+row <- K[ind,]
+unique(row)
+
+x11()
+matplot(1:1600,t(X), type='l', xlab='x', ylab='orig.func', col=row)
+
+s <- apply(K, 1, function(x) length(unique(x))>1)
+su <- unlist(s)
+rows <- which(s==TRUE)
+
+r <- sample(rows,10)
+for(i in r)
+{
+  x11()
+  matplot(1:1600,t(X), type='l', xlab='x', ylab='orig.func', col=K[i,])
+  legend("topright", legend = levels(factor(K[i,])) , col=unique(K[i,]))#, col=unique(K[i,]),cex=0.8)
+}
+
+graphics.off()
+
+
+
+
