@@ -65,4 +65,4 @@ which(partition!=biggest.group)[which(partition!=biggest.group) %in% which(GOSE.
 # percentage of GOSE==2 patients identified
 length(which(which(partition!=biggest.group) %in% which(GOSE.rm==2)))/length(which(GOSE.rm==2))
 
-
+# TODO: provare a confrontare anche con altre variabili paziente-specific
