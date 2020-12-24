@@ -26,9 +26,11 @@ m <- 4
 
 # load data and rescale
 load("Smoothing/smooth_60b_nopenalization.RData")
-X <- X[-c(12,13,19),] # matrix n x n_time
+X <- X[-c(12,13,19,24),] # matrix n x n_time, HO TOLTO ANCHE LA 24
 X <- X[, seq(1,1600,by=step)]
 X <- X/max(X) # TODO: capire se si può migliorare
+
+matplot(t(X), type='l')
 
 # basis 
 basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=m)
@@ -50,11 +52,11 @@ hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 1000,
-            burnin = 500,
+out <- FBNP(n_iter = 3000,
+            burnin = 2000,
             thin = 1,
             M = 150,
-            mass = 1,
+            mass = 1000,
             X = X,
             basis = basis,
             beta = beta,
@@ -65,7 +67,7 @@ out <- FBNP(n_iter = 1000,
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
 
 # save output
-#save(out, file="Results/out_nico_24_12_2e3_iter_.RData") 
+save(out, file="Results/out_nico_24_12_eddajeee.RData") 
 
 names(out)
 
