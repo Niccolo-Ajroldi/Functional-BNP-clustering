@@ -14,9 +14,9 @@ source("FBNP.R")
 
 #### DATA #### -------------------------------------------------------------------------------
 
-step      <- 10
+step      <- 5
 n_time    <- 1600/step
-time.grid <- 1:(1600/step) # TODO: riscalare la time.grid
+time.grid <- 1:n_time # TODO: riscalare la time.grid
 
 L <- 30
 m <- 4
@@ -38,21 +38,23 @@ beta <- t(X_smoothed_f$fd$coefs)
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 1000,
-            burnin = 500,
+out <- FBNP(n_iter = 5000,
+            burnin = 3000,
             thin = 1,
             M = 150,
-            mass = 100,
+            mass = 1,
             X = X,
             basis = basis,
             beta = beta,
-            time.grid = time.grid)
+            time.grid = time.grid,
+            var_sigma = 100,
+            var_phi = 100)
 
 
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
 
 # save output
-# save(out, file="Results/out_nico_23_12_500_iter_.RData") 
+#save(out, file="Results/out_nico_24_12_2e3_iter_.RData") 
 
 names(out)
 

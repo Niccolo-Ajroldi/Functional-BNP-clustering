@@ -1,9 +1,11 @@
 
+# load function for prior elicitation
+source("Prior Elicitation.R")
+
 library(invgamma)
 library(fda)
 library(MASS)
 library(tictoc)
-source("Prior Elicitation.R")
 
 #' 
 #' Bayesian Nonparamteric clustering of functional data.
@@ -20,6 +22,9 @@ source("Prior Elicitation.R")
 #' @param beta coefficients of projection in basis of X
 #' @param time.grid vector defining the time grid
 #' 
+#' @param var_sigma variance of sigma to be constrained
+#' @param var_phi variance of phi to be constrained
+#' 
 #' 
 #' @return a list with the following components:
 #'         K:            (n_iter-burnin) x n matrix, [K]ij = cluster of observation j at iteration i
@@ -32,7 +37,8 @@ source("Prior Elicitation.R")
 
 
 FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
-                  X, basis, beta, time.grid)
+                  X, basis, beta, time.grid,
+                  var_sigma, var_phi)
   
 {
   
@@ -53,7 +59,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   #### HYPERPARAMETERS ----------------------------------------------------------------------------
   
-  hyper_list  <- hyperparameters(50, 50, X, beta)
+  hyper_list  <- hyperparameters(var_sigma, var_phi, X, beta)
   a           <- hyper_list$a
   b           <- hyper_list$b
   c           <- hyper_list$c 

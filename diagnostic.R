@@ -6,9 +6,8 @@ library(coda)
 
 unique_clusters <- apply(K, 1, function(x) length(unique(x)))
 coda_import <- as.mcmc(unique_clusters)
-print(summary(coda_import))
-print(geweke.diag(coda_import))
-x11()
+summary(coda_import)
+geweke.diag(coda_import)
 acfplot(coda_import)
 
 #### Posterior Similarity Matrix ####
@@ -39,7 +38,10 @@ est_part_BINDER <- function(clust, PSM){
 }
 
 partition <- as.numeric(as.factor(est_part_BINDER(K, PSM(K))))
-print(table(partition))
+n_clusters <- length(unique(partition))
+print(paste0("Number of cluster via Binder Loss: ", n_clusters))
+#table(partition)
+
 
 #### plot ####
 

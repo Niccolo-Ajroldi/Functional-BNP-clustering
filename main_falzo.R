@@ -34,21 +34,24 @@ beta <- t(X_smoothed_f$fd$coefs)
 
 #### CALL #### --------------------------------------------------------------------------
 
-K <- FBNP(n_iter = 2000,
-          burnin = 1000,
-          thin = 1,
-          M = 150,
-          mass = 10,
-          X = X,
-          basis = basis,
-          beta = beta,
-          time.grid = time.grid)
+out <- FBNP(n_iter = 5000,
+            burnin = 3000,
+            thin = 1,
+            M = 150,
+            mass = 1,
+            X = X,
+            basis = basis,
+            beta = beta,
+            time.grid = time.grid,
+            var_sigma = 1000,
+            var_phi = 1000
+            )
 
 
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
 
 # save output
-# save(out, file="Results/out_nico_23_12_500_iter_.RData") 
+#save(out, file="Results/out_nico_23_12_500_iter_.RData") 
 
 names(out)
 
