@@ -3,6 +3,7 @@ library(invgamma)
 library(fda)
 library(MASS)
 library(tictoc)
+source("Prior Elicitation.R")
 
 #' 
 #' Bayesian Nonparamteric clustering of functional data.
@@ -52,19 +53,14 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   #### HYPERPARAMETERS ----------------------------------------------------------------------------
   
-  # hyperparameters of mu
-  m0 <- rep(0,L)
-  xi <- 1
-  Lambda0 <- diag(xi,L)
-  Lambda0_inv <- diag(1/xi,L) 
-  
-  # hyperparameters of sigma^2
-  a <- 2.01
-  b <- 1.01
-  
-  # hyperparameters of phi_t
-  c <- 2.01
-  d <- 1.01
+  hyper_list  <- hyperparameters(50, 50, X, beta)
+  a           <- hyper_list$a
+  b           <- hyper_list$b
+  c           <- hyper_list$c 
+  d           <- hyper_list$d
+  m0          <- hyper_list$m0
+  Lambda0     <- hyper_list$Lambda0
+  Lambda0_inv <- solve(Lambda0)
   
   #### LATENT RV'S INITIALIZATION -----------------------------------------------------------------
   
@@ -269,4 +265,20 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
 #'               a generic functional parameter object, in order to allow also roughness penalization smoothing
 #'               (in tal caso non possiamo semplicemente valutare i coefficienti in basi moltiplicando matrici)
 #' 
+
+
+## PREVIOUS PRIOR ELICITATION:
+## hyperparameters of mu
+#m0 <- rep(0,L)
+#xi <- 1
+#Lambda0 <- diag(xi,L)
+#Lambda0_inv <- diag(1/xi,L) 
+#
+## hyperparameters of sigma^2
+#a <- 2.01
+#b <- 1.01
+#
+## hyperparameters of phi_t
+#c <- 2.01
+#d <- 1.01
 

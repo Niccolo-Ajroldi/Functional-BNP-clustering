@@ -1,12 +1,11 @@
-remove(list=ls())
 
-hyperparameters <- function(var_sigma,var_phi,X_obs,beta){
-  #input
-  #var_sigma: desired variance for sigma
-  #var_phi: desired variance for phi_t 
-  #X_obs: matrix (X_obs)_ij = X_i(j)
-  #beta: matrix (beta)_ij projection coefficients of datum i on the basis j
-  
+# input
+#  var_sigma: desired variance for sigma
+#  var_phi: desired variance for phi_t 
+#  X_obs: matrix (X_obs)_ij = X_i(j)
+#  beta: matrix (beta)_ij projection coefficients of datum i on the basis j
+
+hyperparameters <- function(var_sigma, var_phi, X_obs, beta){
   
   #### SIGMA^2 : a,b ####
   ## sigma^2 ~ IG(a,b)
