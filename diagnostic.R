@@ -1,20 +1,14 @@
 
 library(coda)
-devtools::install_github("sarawade/mcclust.ext")
-library(mcclust.ext)
-
-#### burnin ####
-
-save(K, file="K_vero.RData")
-K_old <- K
-K <- K[3000:n_iter,]
+#library(mcclust.ext)
 
 #### Number of clusters ####
 
 unique_clusters <- apply(K, 1, function(x) length(unique(x)))
 coda_import <- as.mcmc(unique_clusters)
-summary(coda_import)
-geweke.diag(coda_import)
+print(summary(coda_import))
+print(geweke.diag(coda_import))
+x11()
 acfplot(coda_import)
 
 #### Posterior Similarity Matrix ####
@@ -45,14 +39,14 @@ est_part_BINDER <- function(clust, PSM){
 }
 
 partition <- as.numeric(as.factor(est_part_BINDER(K, PSM(K))))
-table(partition)
+print(table(partition))
 
 #### plot ####
 
 x11()
 matplot(t(X), col=partition, type='l')
 
-#### plot mu ####
+#### traceplots ####
 
 
   
