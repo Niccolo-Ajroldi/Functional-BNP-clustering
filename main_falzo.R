@@ -12,6 +12,9 @@ library(fdakma)
 # load FBNP function
 source("FBNP.R")
 
+# load function for prior elicitation
+source("Prior Elicitation.R")
+
 #### DATA #### -------------------------------------------------------------------------------
 
 L <- 30
@@ -32,6 +35,15 @@ X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
 # save coefficients
 beta <- t(X_smoothed_f$fd$coefs)
 
+#### HYPERPARAM #### -------------------------------------------------------------------------------
+
+# elicit hyperparameters
+#hyper_list <- hyperparameters(var_sigma=1, var_phi=1, X, beta)
+
+# or set them a caso
+hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
+
+
 #### CALL #### --------------------------------------------------------------------------
 
 out <- FBNP(n_iter = 5000,
@@ -43,9 +55,7 @@ out <- FBNP(n_iter = 5000,
             basis = basis,
             beta = beta,
             time.grid = time.grid,
-            var_sigma = 1000,
-            var_phi = 1000
-            )
+            hyperparam = hyper_list)
 
 
 #### DIAGNOSTIC #### -------------------------------------------------------------------------

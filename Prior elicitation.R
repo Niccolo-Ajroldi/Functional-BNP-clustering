@@ -30,9 +30,9 @@ hyperparameters <- function(var_sigma, var_phi, X_obs, beta){
   
   
   return (list('a' = a,
-              'b' = b,
-              'c' = c,
-              'd' = d,
-              'm0' = m0,
-              'Lambda0' = Lambda0))
+               'b' = b,
+               'c' = c,
+               'd' = d,
+               'm0' = m0,
+               'Lambda0' = Lambda0))
 }

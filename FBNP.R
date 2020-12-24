@@ -1,7 +1,4 @@
 
-# load function for prior elicitation
-source("Prior Elicitation.R")
-
 library(invgamma)
 library(fda)
 library(MASS)
@@ -22,8 +19,7 @@ library(tictoc)
 #' @param beta coefficients of projection in basis of X
 #' @param time.grid vector defining the time grid
 #' 
-#' @param var_sigma variance of sigma to be constrained
-#' @param var_phi variance of phi to be constrained
+#' @param hyperparam a list with hyperparameters specification
 #' 
 #' 
 #' @return a list with the following components:
@@ -35,10 +31,9 @@ library(tictoc)
 #' 
 #' 
 
-
 FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
                   X, basis, beta, time.grid,
-                  var_sigma, var_phi)
+                  hyperparam)
   
 {
   
@@ -59,13 +54,12 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   #### HYPERPARAMETERS ----------------------------------------------------------------------------
   
-  hyper_list  <- hyperparameters(var_sigma, var_phi, X, beta)
-  a           <- hyper_list$a
-  b           <- hyper_list$b
-  c           <- hyper_list$c 
-  d           <- hyper_list$d
-  m0          <- hyper_list$m0
-  Lambda0     <- hyper_list$Lambda0
+  a           <- hyperparam$a
+  b           <- hyperparam$b
+  c           <- hyperparam$c 
+  d           <- hyperparam$d
+  m0          <- hyperparam$m0
+  Lambda0     <- hyperparam$Lambda0
   Lambda0_inv <- solve(Lambda0)
   
   #### LATENT RV'S INITIALIZATION -----------------------------------------------------------------
