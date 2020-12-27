@@ -3,6 +3,8 @@ library(invgamma)
 library(fda)
 library(MASS)
 library(tictoc)
+#install.packages("pbmcapply")
+library(pbmcapply)
 
 #' 
 #' Bayesian Nonparamteric clustering of functional data.
@@ -87,8 +89,11 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   p <- rep(1/M, M)
   
   #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
-  K <- matrix(0,nrow=n_iter,ncol=n) 
-  K[1,] <- sample(1:n)
+  K <- matrix(0,nrow=(n_iter-burnin),ncol=n)
+  
+  # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
+  # per le iterazioni dopo il burnin
+  K_curr <- sample(1:n) # perché non facciamo sample 1:M?
   
   #### RETURN VARIABLES ---------------------------------------------------------------------------
   
@@ -107,7 +112,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   #### ALGORITHM ----------------------------------------------------------------------------------
   
-  pb <- txtProgressBar(0, n_iter, style = 3) # TODO: customize with expected time
+  pb <- progressBar(0, max = n_iter, initial = 0, style = "ETA")
   tic(quiet=TRUE)
   
   
@@ -120,7 +125,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
     for(j in 1:M)
     {
       # observations in cluster j
-      indexes_j <- which(K[iter,]==j)
+      indexes_j <- which(K_curr==j)
       # number of observations in cluster j
       r <- length(indexes_j)
       
@@ -156,10 +161,10 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         }
         
         # sample coefficients of basis projection
-        mu_coef <- mvrnorm(n=1, mu=mu_r, Sigma=Lambda_r)
+        mu_coef[j,] <- mvrnorm(n=1, mu=mu_r, Sigma=Lambda_r)
         
         # evaluation of mu on the time grid
-        mu[j,] <- mu_coef %*% basis.t
+        mu[j,] <- mu_coef[j,] %*% basis.t
         
       } else {
         ## SIGMA2
@@ -170,9 +175,9 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         
         ## MU
         # sample coefficients of basis projection
-        mu_coef <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
+        mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
         # evaluation of mu on the time grid
-        mu[j,] <- mu_coef %*% basis.t
+        mu[j,] <- mu_coef[j,] %*% basis.t
       }
         
     }
@@ -194,7 +199,12 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
       p_i <- p_i - max(p_i) # TODO: controllare
       p_i <- exp(p_i)/sum(exp(p_i))
       # cluster assignment at current iteration
-      K[iter,i] <- sample(1:M, size=1, prob=p_i)
+      K_curr[i] <- sample(1:M, size=1, prob=p_i)
+      if(iter > burnin)
+      {
+        K[iter - burnin,i] <- K_curr[i]
+      }
+      
       
       # save
       if(iter > burnin)
@@ -212,12 +222,12 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
     
     #### STEP 3: weights ####----------------------------------------------------------------------
     
-    V[1] <- rbeta(1, 1 + sum(K[iter,] == 1), mass + sum(K[iter,] > 1))
+    V[1] <- rbeta(1, 1 + sum(K_curr == 1), mass + sum(K_curr > 1))
     p[1] <- V[1]
     
     for(l in 2:(M - 1))
     {
-      V[l] <- rbeta(1, 1 + sum(K[iter,] == l), mass + sum(K[iter,] > j))
+      V[l] <- rbeta(1, 1 + sum(K_curr == l), mass + sum(K_curr > j))
       p[l] <- V[l] * prod(1 - V[1:(l - 1)])
     }
     
@@ -244,10 +254,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   #### RETURN -------------------------------------------------------------------------------------
   
-  # remove burnin iterations from K
-  # TODO: magari evitare proprio di salvarle
-  K <- K[-(1:burnin),]  
-  
   out <- list(K, mu_coef_out, sigma2_out, probs_j_out, probs_ij_out)
   names(out) <- c("K", "mu_coef_out", "sigma2_out", "probs_j_out", "probs_ij_out")
   
@@ -259,7 +265,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
 
 
 #' TODO list:
-#'             - customize progress bar
 #'             - consider removing thinning parameter
 #'             - consider the more general case in which basis is replace with fdParobj,
 #'               a generic functional parameter object, in order to allow also roughness penalization smoothing
@@ -282,3 +287,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
 #c <- 2.01
 #d <- 1.01
 
+# Adesso stiamo salvando in mu_coef_out soltatno mu_coef dell'ultimo cluster valutato
+# Quindi devo salvare mu_coef come matrice, che in ogni riga salva i coefficienti di mu del cluster j_esimo
+# In questo modo, avrò una lista di matrici

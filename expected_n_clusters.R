@@ -6,7 +6,7 @@ n <- dim(X)[1]
 mass <- 0.31
 
 # expected number of clusters
-sum( mass/(mass+(0:(n-1))) )
+sum(mass/(mass+0:(n-1)))
 
 # approximation 1
 mass*log(1+n/mass)

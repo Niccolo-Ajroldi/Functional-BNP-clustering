@@ -41,6 +41,8 @@ X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
 # save coefficients
 beta <- t(X_smoothed_f$fd$coefs)
 
+save(X, basis, X_smoothed_f, beta, time.grid, file="Xdata.RData")
+
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
@@ -52,11 +54,11 @@ hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 3000,
-            burnin = 2000,
+out <- FBNP(n_iter = 7000,
+            burnin = 5000,
             thin = 1,
             M = 150,
-            mass = 1000,
+            mass = 0.31,
             X = X,
             basis = basis,
             beta = beta,
@@ -64,21 +66,10 @@ out <- FBNP(n_iter = 3000,
             hyperparam = hyper_list)
 
 
-#### DIAGNOSTIC #### -------------------------------------------------------------------------
-
 # save output
-save(out, file="Results/out_nico_24_12_eddajeee.RData") 
-
-names(out)
-
-K            <- out$K
-mu_coef_out  <- out$mu_coef_out
-sigma2_out   <- out$sigma2_out
-probs_j_out  <- out$probs_j_out
-probs_ij_out <- out$probs_ij_out
+save(out, file="Results/out_nico_24_12_eddajeee.RData")
+save(out, file = "Results/out_10000iter_hyperacaso.RData")
 
 
-# perform diagnostic
-source("diagnostic.R")
 
 

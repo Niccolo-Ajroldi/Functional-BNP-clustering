@@ -1,4 +1,5 @@
 setwd("D:/Poli/Corsi/BAYESIAN/Proj/dati")
+setwd("C:/Users/Teresa Bortolotti/Desktop/ProgettoBayesiana/dati/potenziali_evocati")
 
 #### IMPORTAZIONE DATI ####
 data <- read.table('dati.csv', head=TRUE, sep=',', row.names = "id")
@@ -29,9 +30,13 @@ GOSE <- data$GOSE
 
 # remove the observations that I removed from X
 GOSE.rm <- GOSE[-c(12,13,19,24)]
-
 GOSE.rm
+
+#save(GOSE.rm, file="GOSEcomparison.RData")
+
+partition <- partition.BIN
 partition
+
 
 x11()
 matplot(t(X), type='l', col=GOSE.rm, main="Curves clustered by GOSE")
