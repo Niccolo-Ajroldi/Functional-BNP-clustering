@@ -28,14 +28,11 @@ hyperparameters <- function(var_sigma, var_phi, X_obs, beta){
   m0 <- colMeans(beta)
   Lambda0 <- diag(diag(cov(beta)))
   
-  desired_prior_values <- c('var_sigma' = var_sigma,
-                            'var_phi' = var_phi)
   
   return (list('a' = a,
                'b' = b,
                'c' = c,
                'd' = d,
                'm0' = m0,
-               'Lambda0' = Lambda0,
-               'desired_prior_values' = desired_prior_values))
+               'Lambda0' = Lambda0))
 }
