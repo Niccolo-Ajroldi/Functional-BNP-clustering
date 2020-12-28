@@ -20,6 +20,7 @@ source("Prior Elicitation.R")
 step      <- 5
 n_time    <- 1600/step
 time.grid <- 1:n_time # TODO: riscalare la time.grid
+time.grid <- time.grid#/max(time.grid)
 
 L <- 30
 m <- 4
@@ -28,7 +29,7 @@ m <- 4
 load("Smoothing/smooth_60b_nopenalization.RData")
 X <- X[-c(12,13,19,24),] # matrix n x n_time, HO TOLTO ANCHE LA 24
 X <- X[, seq(1,1600,by=step)]
-X <- X/max(X) # TODO: capire se si può migliorare
+X <- 10*X/max(X) # TODO: capire se si può migliorare
 
 matplot(t(X), type='l')
 
@@ -41,21 +42,21 @@ X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
 # save coefficients
 beta <- t(X_smoothed_f$fd$coefs)
 
-save(X, basis, X_smoothed_f, beta, time.grid, file="Xdata.RData")
+#save(X, basis, X_smoothed_f, beta, time.grid, file="Xdata.RData")
 
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-#hyper_list <- hyperparameters(var_sigma=1, var_phi=1, X, beta)
+hyper_list <- hyperparameters(var_sigma=10, var_phi=10, X, beta)
 
 # or set them a caso
-hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
+#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 7000,
-            burnin = 5000,
+out <- FBNP(n_iter = 5000,
+            burnin = 3000,
             thin = 1,
             M = 150,
             mass = 0.31,

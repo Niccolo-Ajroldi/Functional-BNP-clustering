@@ -38,16 +38,16 @@ beta <- t(X_smoothed_f$fd$coefs)
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-#hyper_list <- hyperparameters(var_sigma=1, var_phi=1, X, beta)
+hyper_list <- hyperparameters(var_sigma=10, var_phi=10, X, beta)
 
 # or set them a caso
-hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
+#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 
 #### CALL #### --------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 5000,
-            burnin = 3000,
+out <- FBNP(n_iter = 500,
+            burnin = 100,
             thin = 1,
             M = 150,
             mass = 1,
@@ -61,7 +61,7 @@ out <- FBNP(n_iter = 5000,
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
 
 # save output
-#save(out, file="Results/out_nico_23_12_500_iter_.RData") 
+save(out, file="Results/out_nico_falZo_27_12_2000_iter.RData") 
 
 names(out)
 
