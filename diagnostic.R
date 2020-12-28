@@ -113,10 +113,10 @@ for(i in 1:idx)
 {
   if(length(observations[[i]]) > length(time.grid))
   {
-    matplot(t(observations[[i]]), type = 'l', col=GOSE.rm, main = paste("Cluster",i), xlab="")
+    matplot(t(observations[[i]]), type = 'l', col=GOSE.rm[which(partition==i)], main = paste("Cluster",i), xlab="")
   }else{
-    matplot(observations[[i]], type = 'l', col=GOSE.rm, main = paste("Cluster",i), xlab="")
-    }
+    matplot(observations[[i]], type = 'l', col=GOSE.rm[which(partition==i)], main = paste("Cluster",i), xlab="")
+  }
 }
 
 # partition by GOSE

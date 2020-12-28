@@ -16,12 +16,10 @@ library(pbmcapply)
 #' @param M stick-breaking representation
 #' @param mass total mass parameter
 #' 
-#' 
-#' @param smoothing a list with the following components:
-#'                 X data matrix n x T
-#'                 basis basisfd object from fda library 
-#'                 beta coefficients of projection in basis of X
-#'                 time.grid vector defining the time grid
+#' @param X data matrix n x T
+#' @param basis basisfd object from fda library 
+#' @param beta coefficients of projection in basis of X
+#' @param time.grid vector defining the time grid
 #' 
 #' @param hyperparam a list with hyperparameters specification
 #' 
@@ -32,23 +30,14 @@ library(pbmcapply)
 #'         sigma2_out:   (n_iter-burnin)-long list, keeps track og sigma2
 #'         probs_j_out:  (n_iter-burnin)-long list, keeps track of the probability of each cluster
 #'         probs_ij_out: (n_iter-burnin)-long list, keeps track of the probabilities (matrix) of each observation to fall in each cluster  
-#'         algorith_parameters
+#' 
 #' 
 
 FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
-                  smoothing,
+                  X, basis, beta, time.grid,
                   hyperparam)
   
 {
-  
-  
-  #### DATA ---------------------------------------------------------------------------------------
-  
-  X <- smoothing$X
-  basis <- smoothing$basis
-  beta <- smoothing$beta
-  time.grid <- smoothing$time.grid
-
   
   ##### PARAMETERS SETTING ------------------------------------------------------------------------
   
@@ -74,7 +63,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   m0          <- hyperparam$m0
   Lambda0     <- hyperparam$Lambda0
   Lambda0_inv <- solve(Lambda0)
-  
   
   #### LATENT RV'S INITIALIZATION -----------------------------------------------------------------
   
@@ -266,16 +254,8 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   #### RETURN -------------------------------------------------------------------------------------
   
-  algo_parameters <- c('n_iter' = n_iter,
-                       'burnin' = burnin,
-                       'thinning' = thin,
-                       'M' = M,
-                       'mass' = mass)
-  
-  out <- list(K, mu_coef_out, sigma2_out, probs_j_out, probs_ij_out, algo_parameters)
-  names(out) <- c("K", "mu_coef_out", "sigma2_out", "probs_j_out", "probs_ij_out", "algorithm_parameters")
-  
-
+  out <- list(K, mu_coef_out, sigma2_out, probs_j_out, probs_ij_out)
+  names(out) <- c("K", "mu_coef_out", "sigma2_out", "probs_j_out", "probs_ij_out")
   
   return(out)
 
