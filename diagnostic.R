@@ -1,6 +1,9 @@
-setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
 
-rm(list=ls())
+#setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+
+#rm(list=ls())
 cat("\014")
 
 #### DIAGNOSTIC #####------------------------------------------
@@ -33,6 +36,7 @@ mu_coef_out  <- out$mu_coef_out
 sigma2_out   <- out$sigma2_out
 probs_j_out  <- out$probs_j_out
 probs_ij_out <- out$probs_ij_out
+View(K)
 
 # Evaluation of the Posterior Similarity Matrix
 source("PSM.R")

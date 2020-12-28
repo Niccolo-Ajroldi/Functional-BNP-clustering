@@ -11,15 +11,12 @@ library(fdakma)
 
 # load FBNP function
 source("FBNP.R")
-
 # load function for prior elicitation
 source("Prior Elicitation.R")
-
-#### DATA #### -------------------------------------------------------------------------------
-
-
 # load function smoothing
 source('Smoothing.R')
+
+#### DATA #### -------------------------------------------------------------------------------
 
 # load data
 data(kma.data)
@@ -27,20 +24,36 @@ X <- kma.data$y0 # matrix n x n_time
 time.grid <- (kma.data$x)[1,] # time grid
 n_time <- length(time.grid)
 
-
 matplot(t(X), type='l')
 
-smoothing_list <- smoothing(X = X, 
-                            step = 5, 
-                            nbasis = 30, 
-                            spline_order = 4)
+# Non posso usare la funzione per fare smoothing, perchè qui la time grid non è 1:1600, ma nemmeno 1:n
+
+# basis 
+L <- 30
+basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
+
+# smooth data
+X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
+
+# save coefficients
+beta <- t(X_smoothed_f$fd$coefs)
+
+smoothing_parameters <- list('step' = 1,
+                             'number_basis' = L,
+                             'spline_order' = 4)
+
+smoothing_list <- list('basis' = basis,
+                       'beta'= beta,
+                       'time.grid' = time.grid,
+                       'X' = X,
+                       'smoothing_parameters' = smoothing_parameters)
 
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-# #hyper_list <- hyperparameters(var_sigma = 100, var_phi = 100, 
-#                                 X = smoothing_list$X,
-#                                 beta = smoothing_list$beta)
+hyper_list <- hyperparameters(var_sigma = 10, var_phi = 5, 
+                              X = smoothing_list$X,
+                              beta = smoothing_list$beta)
 
 # or set them a caso
 #hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
@@ -48,11 +61,11 @@ smoothing_list <- smoothing(X = X,
 
 #### CALL #### --------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 1000,
-            burnin = 500,
+out <- FBNP(n_iter = 500,
+            burnin = 100,
             thin = 1,
             M = 150,
-            mass = 0.31,
+            mass = 100,
             smoothing = smoothing_list,
             hyperparam = hyper_list)
 
@@ -73,7 +86,7 @@ out[['algorithm_parameters']] <- NULL
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
 
 # save output
-save(out, file="Results/out_nico_falZo_27_12_2000_iter.RData") 
+#save(out, file="Results/out_nico_falZo_27_12_2000_iter.RData") 
 
 names(out)
 

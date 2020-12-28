@@ -3,7 +3,6 @@ library(invgamma)
 library(fda)
 library(MASS)
 library(tictoc)
-#install.packages("pbmcapply")
 library(pbmcapply)
 
 #' 
@@ -16,12 +15,11 @@ library(pbmcapply)
 #' @param M stick-breaking representation
 #' @param mass total mass parameter
 #' 
-#' 
 #' @param smoothing a list with the following components:
-#'                 X data matrix n x T
-#'                 basis basisfd object from fda library 
-#'                 beta coefficients of projection in basis of X
-#'                 time.grid vector defining the time grid
+#'                  X data matrix n x T
+#'                  basis basisfd object from fda library 
+#'                  beta coefficients of projection in basis of X
+#'                  time.grid vector defining the time grid
 #' 
 #' @param hyperparam a list with hyperparameters specification
 #' 
@@ -32,7 +30,7 @@ library(pbmcapply)
 #'         sigma2_out:   (n_iter-burnin)-long list, keeps track og sigma2
 #'         probs_j_out:  (n_iter-burnin)-long list, keeps track of the probability of each cluster
 #'         probs_ij_out: (n_iter-burnin)-long list, keeps track of the probabilities (matrix) of each observation to fall in each cluster  
-#'         algorith_parameters
+#'         algorithm_parameters
 #' 
 
 FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
@@ -40,7 +38,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
                   hyperparam)
   
 {
-  
   
   #### DATA ---------------------------------------------------------------------------------------
   

@@ -1,7 +1,7 @@
 
 # setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-# setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -12,14 +12,12 @@ library(fdakma)
 
 # load FBNP function
 source("FBNP.R")
-
 # load function for prior elicitation
 source("Prior Elicitation.R")
-
-#### DATA #### -------------------------------------------------------------------------------
-
 # load function smoothing
 source('Smoothing.R')
+
+#### DATA #### -------------------------------------------------------------------------------
 
 # load data and rescale
 load("X.RData")
@@ -59,8 +57,8 @@ hyper_list <- hyperparameters(var_sigma = 100, var_phi = 100,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 1000,
-            burnin = 500,
+out <- FBNP(n_iter = 500,
+            burnin = 100,
             thin = 1,
             M = 150,
             mass = 0.31,
@@ -81,6 +79,7 @@ save(out, run_parameters, file="Results/out_nico_24_12_eddajeee.RData")
 save(out, run_parameters, file = "Results/out_10000iter_hyperacaso.RData")
 save(out, run_parameters, file = "Ultimo.RData")
 
-
+is(out)
+names(out)
 
 
