@@ -1,9 +1,6 @@
+setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
 
-#setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
-
-#rm(list=ls())
+rm(list=ls())
 cat("\014")
 
 #### DIAGNOSTIC #####------------------------------------------
@@ -18,7 +15,10 @@ library(fdakma)
 
 load("Results/out_10000iter_hyperacaso.RData")
 load("Xdata.RData")
-load("GOSEcomparison.RData")
+
+### warning
+load("GOSEcomparison.RData") #if 22 data
+load("GOSE_completo.RDATA") #if 26 data
 
 #### save in list observations with GOSE=1 and GOSE=2 ####
 observations.GOSE <- list()
@@ -36,7 +36,6 @@ mu_coef_out  <- out$mu_coef_out
 sigma2_out   <- out$sigma2_out
 probs_j_out  <- out$probs_j_out
 probs_ij_out <- out$probs_ij_out
-View(K)
 
 # Evaluation of the Posterior Similarity Matrix
 source("PSM.R")
@@ -110,10 +109,10 @@ for(i in indexes)
 }
 
 table(partition)
-
+time.grid<-1:1600
 x11()
-par(mfrow = c(3,2))
-for(i in 1:idx)
+par(mfrow = c(3,3))
+for(i in 1:idx-1)
 {
   if(length(observations[[i]]) > length(time.grid))
   {
