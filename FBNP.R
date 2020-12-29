@@ -103,6 +103,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
   # per le iterazioni dopo il burnin
   K_curr <- sample(1:n, size=n) # perché non facciamo sample 1:M?
+  #K_curr <- rep(1,n)
   
   #### RETURN VARIABLES ---------------------------------------------------------------------------
   

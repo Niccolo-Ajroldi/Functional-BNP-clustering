@@ -48,21 +48,21 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-#hyper_list <- hyperparameters(var_sigma = 100, var_phi = 100, 
+#hyper_list <- hyperparameters(var_sigma = 10000, var_phi = 10000, 
 #                              X = smoothing_list$X,
 #                              beta = smoothing_list$beta)
-#
+
 # or set them a caso
 hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 
 #### CALL #### --------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 500,
-            burnin = 300,
+out <- FBNP(n_iter = 1000,
+            burnin =  500,
             thin = 1,
             M = 150,
-            mass = 1,
+            mass = 0.7,
             smoothing = smoothing_list,
             hyperparam = hyper_list)
 
