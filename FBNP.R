@@ -218,10 +218,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
 
     }
     
-    #LLLLLLLLLLLLLLLLLLLLLLLLLLL
-    print(K_curr)
-    #LLLLLLLLLLLLLLLLLLLLLLLLLLL
-    
     # save
     if(iter > burnin)
     {
