@@ -53,7 +53,7 @@ smoothing_list <- list('basis' = basis,
 #                              beta = smoothing_list$beta)
 #
 # or set them a caso
-hyper_list <- list(a=2.01, b=1, c=2.01, d=1, m0=rep(0,L), Lambda0=diag(1,L))
+hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 
 #### CALL #### --------------------------------------------------------------------------
@@ -62,7 +62,7 @@ out <- FBNP(n_iter = 500,
             burnin = 300,
             thin = 1,
             M = 150,
-            mass = 1000,
+            mass = 1,
             smoothing = smoothing_list,
             hyperparam = hyper_list)
 
