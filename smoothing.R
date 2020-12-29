@@ -1,14 +1,12 @@
 
-
-
 smoothing <- function(X, step, nbasis, spline_order){
-
+  
   n_time    <- 1600/step
   time.grid <- 1:n_time 
   
+  # use steps
   X <- X[, seq(1,1600,by=step)] # matrix n x time.grid, HO TOLTO ANCHE LA 24
-  # X <- X/max(X) # TODO: capire se si può migliorare
-  
+
   # basis 
   basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=nbasis, norder=spline_order)
   
@@ -19,8 +17,8 @@ smoothing <- function(X, step, nbasis, spline_order){
   beta <- t(X_smoothed_f$fd$coefs)
   
   smoothing_parameters <- list('step' = step,
-                           'number_basis' = nbasis,
-                           'spline_order' = spline_order)
+                               'number_basis' = nbasis,
+                               'spline_order' = spline_order)
   
   return(list('basis' = basis,
               'beta'= beta,

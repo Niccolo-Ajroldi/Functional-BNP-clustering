@@ -9,11 +9,8 @@ cat("\014")
 library(fda)
 library(fdakma)
 
-# load FBNP function
 source("FBNP.R")
-# load function for prior elicitation
 source("Prior Elicitation.R")
-# load function smoothing
 source('Smoothing.R')
 
 #### DATA #### -------------------------------------------------------------------------------
@@ -25,8 +22,6 @@ time.grid <- (kma.data$x)[1,] # time grid
 n_time <- length(time.grid)
 
 matplot(t(X), type='l')
-
-# Non posso usare la funzione per fare smoothing, perchè qui la time grid non è 1:1600, ma nemmeno 1:n
 
 # basis 
 L <- 30
@@ -51,24 +46,23 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 10, var_phi = 5, 
-                              X = smoothing_list$X,
-                              beta = smoothing_list$beta)
+#hyper_list <- hyperparameters(var_sigma = 10, var_phi = 5, 
+#                              X = smoothing_list$X,
+#                              beta = smoothing_list$beta)
 
 # or set them a caso
-#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
+hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 
 #### CALL #### --------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 500,
-            burnin = 100,
+out <- FBNP(n_iter = 1000,
+            burnin = 500,
             thin = 1,
             M = 150,
             mass = 100,
             smoothing = smoothing_list,
             hyperparam = hyper_list)
-
 
 
 
@@ -80,7 +74,6 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
                        )
 
 out[['algorithm_parameters']] <- NULL
-
 
 
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
@@ -97,9 +90,8 @@ probs_j_out  <- out$probs_j_out
 probs_ij_out <- out$probs_ij_out
 
 
-# perform diagnostic
-source("diagnostic.R")
-
+K            <- out$K
+View(K)
 
 
 

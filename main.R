@@ -10,11 +10,8 @@ cat("\014")
 library(fda)
 library(fdakma)
 
-# load FBNP function
 source("FBNP.R")
-# load function for prior elicitation
 source("Prior Elicitation.R")
-# load function smoothing
 source('Smoothing.R')
 
 #### DATA #### -------------------------------------------------------------------------------
@@ -22,14 +19,12 @@ source('Smoothing.R')
 # load data and rescale
 load("X.RData")
 
-#eliminates bad data
+# eliminate bad data
 eliminate <- c(12,13,19,24)
 X <- X[-eliminate,] # matrix n x n_time, HO TOLTO ANCHE LA 24
 
-
-#rescale data
-rescale <- 1
-#rescale <- max(X)
+# rescale data
+rescale <- 1 # rescale <- max(X)
 X <- X/rescale 
 
 matplot(t(X), type='l')
@@ -42,12 +37,10 @@ smoothing_list <- smoothing(X = X,
 smoothing_list[['smoothing_parameters']][['rescale_parameter']] <- rescale
 smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminate
 
-# save(X, basis, X_smoothed_f, beta, time.grid, file="Xdata.RData")
-
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 100, var_phi = 100, 
+hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
                               X = smoothing_list$X,
                               beta = smoothing_list$beta)
 
@@ -57,7 +50,7 @@ hyper_list <- hyperparameters(var_sigma = 100, var_phi = 100,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 500,
+out <- FBNP(n_iter = 200,
             burnin = 100,
             thin = 1,
             M = 150,
@@ -68,18 +61,21 @@ out <- FBNP(n_iter = 500,
 ### SAVE OUTPUT #### -------------------------------------------------------------------------
 
 run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
-                       'prior_parameters' = hyper_list,
+                       'prior_parameters'     = hyper_list,
                        'smoothing_parameters' = smoothing_list$smoothing_parameters
                        )
 
-out[['algorithm_parameters']] <- NULL
+out[['algorithm_parameters']] <- NULL # ok ma perchè allora non salvarli direttamente da qui azichè farli restiruire da FBNP e poi rimuoverli?
+
 
 # save output
-save(out, run_parameters, file="Results/out_nico_24_12_eddajeee.RData")
+save(out, run_parameters, file = "Results/out_nico_24_12_eddajeee.RData")
 save(out, run_parameters, file = "Results/out_10000iter_hyperacaso.RData")
 save(out, run_parameters, file = "Ultimo.RData")
 
-is(out)
 names(out)
+names(run_parameters)
 
+K            <- out$K
+View(K)
 
