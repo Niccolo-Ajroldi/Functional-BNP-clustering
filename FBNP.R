@@ -102,7 +102,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
   # per le iterazioni dopo il burnin
-  K_curr <- sample(1:n) # perché non facciamo sample 1:M?
+  K_curr <- sample(1:n, size=n) # perché non facciamo sample 1:M?
   
   #### RETURN VARIABLES ---------------------------------------------------------------------------
   
@@ -204,28 +204,28 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
       {
         p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) - (X[i,]-mu[j,])^2/(2*sigma2[j]*phi[j,]) )
       }
-      # TODO: avoid the subtraction of max and the application of exponential
-      p_i <- p_i - max(p_i) # TODO: controllare
+      p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
       p_i <- exp(p_i)/sum(exp(p_i))
-      # cluster assignment at current iteration
+      
+      # update the cluster assignment at current iteration
       K_curr[i] <- sample(1:M, size=1, prob=p_i)
-      if(iter > burnin)
-      {
-        K[iter - burnin,i] <- K_curr[i]
-      }
-      
-      
+
       # save
       if(iter > burnin)
       {
         probs_ij[i,] <- p_i 
       }
-      
+
     }
+    
+    #LLLLLLLLLLLLLLLLLLLLLLLLLLL
+    print(K_curr)
+    #LLLLLLLLLLLLLLLLLLLLLLLLLLL
     
     # save
     if(iter > burnin)
     {
+      K[iter - burnin,] <- K_curr
       probs_ij_out[[iter - burnin]] <- probs_ij
     }
     
@@ -236,7 +236,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
     
     for(l in 2:(M - 1))
     {
-      V[l] <- rbeta(1, 1 + sum(K_curr == l), mass + sum(K_curr > j))
+      V[l] <- rbeta(1, 1 + sum(K_curr == l), mass + sum(K_curr > l))
       p[l] <- V[l] * prod(1 - V[1:(l - 1)])
     }
     
@@ -272,7 +272,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   out <- list(K, mu_coef_out, sigma2_out, probs_j_out, probs_ij_out, algo_parameters)
   names(out) <- c("K", "mu_coef_out", "sigma2_out", "probs_j_out", "probs_ij_out", "algorithm_parameters")
   
-
   
   return(out)
 
@@ -287,22 +286,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
 #'               a generic functional parameter object, in order to allow also roughness penalization smoothing
 #'               (in tal caso non possiamo semplicemente valutare i coefficienti in basi moltiplicando matrici)
 #' 
-
-
-## PREVIOUS PRIOR ELICITATION:
-## hyperparameters of mu
-#m0 <- rep(0,L)
-#xi <- 1
-#Lambda0 <- diag(xi,L)
-#Lambda0_inv <- diag(1/xi,L) 
-#
-## hyperparameters of sigma^2
-#a <- 2.01
-#b <- 1.01
-#
-## hyperparameters of phi_t
-#c <- 2.01
-#d <- 1.01
 
 # Adesso stiamo salvando in mu_coef_out soltatno mu_coef dell'ultimo cluster valutato
 # Quindi devo salvare mu_coef come matrice, che in ogni riga salva i coefficienti di mu del cluster j_esimo
