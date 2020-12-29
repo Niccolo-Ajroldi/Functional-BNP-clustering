@@ -67,15 +67,8 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL # ok ma perchè allora non salvarli direttamente da qui azichè farli restiruire da FBNP e poi rimuoverli?
 
-
 # save output
-save(out, run_parameters, file = "Results/out_nico_24_12_eddajeee.RData")
-save(out, run_parameters, file = "Results/out_10000iter_hyperacaso.RData")
-save(out, run_parameters, file = "Ultimo.RData")
+#save(out, run_parameters, file = "Ultimo.RData")
 
-names(out)
-names(run_parameters)
 
-K            <- out$K
-View(K)
 

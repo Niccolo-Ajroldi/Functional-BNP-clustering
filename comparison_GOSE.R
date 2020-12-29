@@ -28,6 +28,9 @@ colnames(data) <- c("AGE", "SEX", "EZIOLOGIA", "LATE", "MESIC", "MESIR", "FRMN",
 # GOSE
 GOSE <- data$GOSE
 
+save(GOSE, file = "D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-Clustering/GOSE.RData")
+
+
 # remove the observations that I removed from X
 GOSE.rm <- GOSE[-c(12,13,19,24)]
 GOSE.rm
