@@ -40,18 +40,18 @@ probs_ij_out <- out$probs_ij_out
 source("PSM.R")
 psm <- PSM(K)
 
+x11()
+heatmap(psm, Rowv = NA, Colv = NA)
+
+x11()
+plotpsm(psm)
+
 # Number of clusters
 unique_clusters <- apply(K, 1, function(x) length(unique(x)))
 coda_import <- as.mcmc(unique_clusters)
 summary(coda_import)
 geweke.diag(coda_import)
 acfplot(coda_import)
-
-x11()
-heatmap(psm, Rowv = NA, Colv = NA)
-
-x11()
-plotpsm(psm)
 
 
 #### Partition BINDER - using mcclust.ext ####--------------------------------------------

@@ -107,17 +107,17 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   #### RETURN VARIABLES ---------------------------------------------------------------------------
   
-  mu_coef_out <- list()
-  sigma2_out  <- list()
+  mu_coef_out <- vector("list", length = n_iter-burnin)
+  sigma2_out  <- vector("list", length = n_iter-burnin)
   
   # matrix that tells for each observation the probabilities of observation i belonging to cluster j after STEP 2
   probs_ij <- matrix(0, nrow = n, ncol = M)
   
-  # a list containing the previous matrix for each iteration
-  probs_ij_out <- list()
+  # a list containing the above defined matrix for each iteration
+  probs_ij_out <- vector("list", length = n_iter-burnin)
   
   # a list containing the probabilities p of belonging to a given cluster
-  probs_j_out  <- list()
+  probs_j_out  <- vector("list", length = n_iter-burnin)
   
   
   #### ALGORITHM ----------------------------------------------------------------------------------

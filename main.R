@@ -30,7 +30,7 @@ X <- X/rescale
 matplot(t(X), type='l')
 
 smoothing_list <- smoothing(X = X, 
-                            step = 5, 
+                            step = 1, 
                             nbasis = 30, 
                             spline_order = 4)
 
@@ -50,8 +50,8 @@ hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 200,
-            burnin = 100,
+out <- FBNP(n_iter = 100,
+            burnin = 50,
             thin = 1,
             M = 150,
             mass = 0.31,
