@@ -40,7 +40,7 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
+hyper_list <- hyperparameters(var_sigma = 1000, var_phi = 10,
                               X = smoothing_list$X,
                               beta = smoothing_list$beta)
 
