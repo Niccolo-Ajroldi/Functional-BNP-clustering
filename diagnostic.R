@@ -16,7 +16,7 @@ library(mcclust.ext)
 #load("Results/out_10000iter_hyperacaso.RData")
 
 # load X
-load("Xdata.RData")
+load("X.RData")
 
 # load complete GOSE
 load("GOSE.RData")

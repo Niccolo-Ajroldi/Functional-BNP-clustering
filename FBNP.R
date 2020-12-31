@@ -78,12 +78,12 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   ## SIGMA2
   # numeric(M)
   # (sigma2)_i: sigma^2 del cluster i-esimo
-  sigma2 <- rinvgamma(n = M, shape=a, scale=b)
+  sigma2 <- rinvgamma(n = M, shape=a, rate=b)
   
   ## PHI
   # M x n_time matrix
   # (phi)_ij: phi_t del cluster i-esimo al time point j-esimo (j=1:1600)
-  phi <- matrix(rinvgamma(n=M*n_time, shape=c, scale=d), byrow=TRUE, nrow=M, ncol=n_time)
+  phi <- matrix(rinvgamma(n=M*n_time, shape=c, rate=d), byrow=TRUE, nrow=M, ncol=n_time)
   
   ## MU
   # M x L matrix
@@ -149,14 +149,14 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         {
           b_r <- b_r + 0.5*sum( (X[g,] - mu[j,])^2/phi[j,] )
         }
-        sigma2[j] <- rinvgamma(n = 1, shape=a_r, scale=b_r)
+        sigma2[j] <- rinvgamma(n = 1, shape=a_r, rate=b_r)
         
         ## PHI
         c_r <- c + r*n_time*0.5
         for(t in 1:n_time)
         {
           d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2/(2*sigma2[j]) )
-          phi[j,t] <- rinvgamma(n=1, shape=c_r, scale=d_r)
+          phi[j,t] <- rinvgamma(n=1, shape=c_r, rate=d_r)
         }
         
         ## MU
@@ -178,10 +178,10 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         
       } else {
         ## SIGMA2
-        sigma2[j] <- rinvgamma(n = 1, shape=a, scale=b)
+        sigma2[j] <- rinvgamma(n = 1, shape=a, rate=b)
         
         ## PHI
-        phi[j,] <- rinvgamma(n=n_time, shape=c, scale=d)
+        phi[j,] <- rinvgamma(n=n_time, shape=c, rate=d)
         
         ## MU
         # sample coefficients of basis projection

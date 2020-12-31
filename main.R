@@ -40,7 +40,7 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 1000, var_phi = 10,
+hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
                               X = smoothing_list$X,
                               beta = smoothing_list$beta)
 
@@ -51,7 +51,7 @@ hyper_list <- hyperparameters(var_sigma = 1000, var_phi = 10,
 #### CALL #### -------------------------------------------------------------------------------
 
 out <- FBNP(n_iter = 100,
-            burnin = 50,
+            burnin = 0,
             thin = 1,
             M = 150,
             mass = 0.31,
