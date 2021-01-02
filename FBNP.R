@@ -150,7 +150,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         sigma2[j] <- rinvgamma(n = 1, shape=a_r, rate=b_r)
         
         ## PHI
-        c_r <- c + r*n_time*0.5
+        c_r <- c + r*0.5
         for(t in 1:n_time)
         {
           d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2/(2*sigma2[j]) ) # somma su indexes
@@ -159,7 +159,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         
         ## MU
         magic <- matrix(0, nrow=L, ncol=L)
-        for(t in time.grid)
+        for(t in 1:n_time)
         {
           magic <- magic + ( basis.t[,t] %*% t(basis.t[,t]) )/(phi[j,t])
         }
@@ -173,7 +173,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         } else {
           mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% beta[indexes_j,] )
         }
-        
         
         # sample coefficients of basis projection
         mu_coef[j,] <- mvrnorm(n=1, mu=mu_r, Sigma=Lambda_r)
