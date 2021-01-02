@@ -1,7 +1,6 @@
-
-# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+# setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -10,8 +9,8 @@ cat("\014")
 library(fda)
 library(fdakma)
 
-source("FBNP.R")
-source("Prior Elicitation.R")
+source("new_FBNP.R")
+source("new_Prior_elicitation.R")
 source('Smoothing.R')
 
 #### DATA #### -------------------------------------------------------------------------------
@@ -41,9 +40,10 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
+hyper_list <- new_hyperparameters(var_sigma = 10, var_phi = 10,
                               X = smoothing_list$X,
-                              beta = smoothing_list$beta)
+                              beta = smoothing_list$beta,
+                              time.grid = smoothing_list$time.grid)
 
 # or set them a caso
 #L <- smoothing_list$smoothing_parameters$number_basis
@@ -52,8 +52,8 @@ hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 3000,
-            burnin = 2000,
+out <- new_FBNP(n_iter = 10000,
+            burnin = 7000,
             thin = 1,
             M = 150,
             mass = 0.31,
@@ -65,11 +65,9 @@ out <- FBNP(n_iter = 3000,
 run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
                        'prior_parameters'     = hyper_list,
                        'smoothing_parameters' = smoothing_list$smoothing_parameters
-                       )
+)
 
 out[['algorithm_parameters']] <- NULL # ok ma perchè allora non salvarli direttamente da qui azichè farli restiruire da FBNP e poi rimuoverli?
 
 # save output
-#save(out, run_parameters, file = "Results/Aggiustato_2_01.RData")
-
-
+save(out, run_parameters, file = "Results/new_Aggiustato_2_01.RData")
