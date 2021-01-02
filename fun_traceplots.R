@@ -1,10 +1,8 @@
 
-#setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
-setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+# se mu_gif==TRUE serve ImageMagick:
+#   library(installr)
+#   install.ImageMagick()
 
-
-#library(installr)
-#install.ImageMagick()
 library(coda)
 library(pbmcapply)
 
@@ -12,7 +10,7 @@ fun_traceplots <- function (out,
                             smoothing_list,
                             run_parameters,
                             blocks=1,
-                            time=0.1,
+                            time=0.15,
                             mu_gif=FALSE,
                             falzo=FALSE)  
   
@@ -42,7 +40,6 @@ fun_traceplots <- function (out,
   n         <- dim(smoothing_list$X)[1]
   basis     <- smoothing_list$basis
   time.grid <- smoothing_list$time.grid
-  #step     <- smoothing_list$smoothing_parameters$step
   
   n_iter <- run_parameters$algorithm_parameters[[1]]
   burnin <- run_parameters$algorithm_parameters[[2]]
@@ -50,10 +47,12 @@ fun_traceplots <- function (out,
   M      <- run_parameters$algorithm_parameters[[4]]
   mass   <- run_parameters$algorithm_parameters[[5]]
   
+  # number of iterations after burnin
   nn <- n_iter-burnin
   
-  if(iter_step==0)
-    iter_step = nn/50
+  # show a gif once every iter_step
+  iter_step = nn/50
+  
   
   #### Traceplot Directory ####------------------------------------------------------------
   
@@ -79,6 +78,7 @@ fun_traceplots <- function (out,
   # save RData
   save(out, run_parameters, file = "Output.RData")
   
+  # print information on a txt file
   cat(
     "ALGORITHM\n",
     "Iter:   ", n_iter, "\n",
@@ -122,7 +122,7 @@ fun_traceplots <- function (out,
            type = c("png"),
            device = dev.cur())
   
-  
+  # second half of observations
   X11(width=1300, height=700)
   par(mfrow=n2mfrow(n-nhalf))
   par(oma=c(0,0,2,0))
@@ -157,7 +157,7 @@ fun_traceplots <- function (out,
     par(oma=c(0,0,2,0))
     for(j in kernelz.to.plot)
     {
-      traceplot(as.mcmc(sigma2.out.matrix[j,]), main=paste0("Kernel ",j) )#, ylim=c(1e-17,1e-18))
+      traceplot( as.mcmc(sigma2.out.matrix[j,]), main=paste0("Kernel ",j) )
       abline(h=0, lty=2, col="red")
     }
     title(paste0("sigma^2"), outer = TRUE)
