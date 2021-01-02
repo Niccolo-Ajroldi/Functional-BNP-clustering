@@ -159,7 +159,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         
         ## MU
         magic <- matrix(0, nrow=L, ncol=L)
-        for(t in time.grid)
+        for(t in 1:n_time)
         {
           magic <- magic + ( basis.t[,t] %*% t(basis.t[,t]) )/(phi[j,t])
         }
@@ -173,7 +173,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         } else {
           mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% beta[indexes_j,] )
         }
-        
         
         # sample coefficients of basis projection
         mu_coef[j,] <- mvrnorm(n=1, mu=mu_r, Sigma=Lambda_r)

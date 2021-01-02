@@ -48,18 +48,18 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-#hyper_list <- hyperparameters(var_sigma = 10000, var_phi = 10000, 
-#                              X = smoothing_list$X,
-#                              beta = smoothing_list$beta)
+hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10, 
+                              X = smoothing_list$X,
+                              beta = smoothing_list$beta)
 
 # or set them a caso
-hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
+#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 
 #### CALL #### --------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 1000,
-            burnin =  500,
+out <- FBNP(n_iter = 5000,
+            burnin = 3000,
             thin = 1,
             M = 150,
             mass = 0.7,
@@ -81,23 +81,36 @@ out[['algorithm_parameters']] <- NULL
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
 
 # save output
-#save(out, file="Results/out_nico_falZo_27_12_2000_iter.RData") 
+#save(out, file="Results/out_nico_falZo_2_1.RData") 
 
-names(out)
+library(coda)
+library(devtools)
+library(mcclust.ext)
 
-K            <- out$K
-mu_coef_out  <- out$mu_coef_out
-sigma2_out   <- out$sigma2_out
-probs_j_out  <- out$probs_j_out
-probs_ij_out <- out$probs_ij_out
+K <- out$K
 
+source("PSM.R")
+psm <- PSM(K)
 
-K            <- out$K
-View(K)
+x11()
+heatmap(psm, Rowv = NA, Colv = NA)
 
+est_part_BINDER <- function(clust, PSM){
+  res_loss <- c()
+  for(i in 1:nrow(clust)){
+    # rappresentazione binaria della partizione
+    binary_part <- sapply(clust[i,], function(x) as.numeric(x == clust[i,]))
+    # loss per la partizione i
+    res_loss[i] <- sum(abs(binary_part - PSM))
+  }
+  # tra le iterazioni trova quella che minimizza
+  return(clust[which.min(res_loss),])
+}
 
+part_BIN <- as.numeric(as.factor( est_part_BINDER(K) ))
+table(part_BIN)
 
-
+matplot(t(X), type="l", col=part_BIN)
 
 
 
