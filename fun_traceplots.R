@@ -112,17 +112,17 @@ fun_traceplots <- function (out,
   #max(sigma2out.matrix[,16] -  sigma2_out[[16]])
   
   # for "blocks"
-  for(yo in 1:blocks)
+  for(yo in blocks)
   {
     # I plot 10 kernels in each gif
-    kernelz.to.plot <- (1+15*(yo-1)):(15*yo)
+    kernelz.to.plot <- (1+10*(yo-1)):(10*yo)
     
     # minimum and maximum kernel present here
     kernel.lower <- min(kernelz.to.plot)
     kernel.upper <- max(kernelz.to.plot)
     
     x11(width=1300, height=700)
-    par(mfrow=c(3,5))
+    par(mfrow=c(2,5))
     par(oma=c(0,0,2,0))
     for(j in kernelz.to.plot)
     {
@@ -175,7 +175,7 @@ fun_traceplots <- function (out,
               # mu evaluated on the time grid
               mu_j <- mu_coef_j %*% basis.t
               # plot
-              matplot(t(mu_j), type='l', main=paste0("Kernel ",j), xlab="Iterations", ylim=c(-300,300))
+              matplot(t(mu_j), type='l', main=paste0("Kernel ",j), xlab="Iterations", ylim=c(-100,100))
             }
             #mtext(paste0("Traceplots of mu(t), iteration = ", iter))
             title(paste0("mu(t), iteration ", iter), outer = TRUE)

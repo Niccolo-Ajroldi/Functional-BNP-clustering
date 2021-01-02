@@ -59,8 +59,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   ## evaluate the basis on the time grid
   # basis.t: (L x n_time) matrix of basis fuctions evaluated on the time time grid
   basis.t <- t(eval.basis(time.grid, basis))
-  # basis2.t: n_time vector, b2[t] is the dot product between basis.t[,t] and itself
-  basis2.t <- sapply(1:n_time, function(t) crossprod(basis.t[,t], basis.t[,t]))
   
   #### HYPERPARAMETERS ----------------------------------------------------------------------------
   
@@ -147,7 +145,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         b_r <- b
         for(g in indexes_j)
         {
-          b_r <- b_r + 0.5*sum( (X[g,] - mu[j,])^2/phi[j,] )
+          b_r <- b_r + 0.5*sum( (X[g,] - mu[j,])^2/phi[j,] ) # somma sui tempi
         }
         sigma2[j] <- rinvgamma(n = 1, shape=a_r, rate=b_r)
         
@@ -155,20 +153,27 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         c_r <- c + r*n_time*0.5
         for(t in 1:n_time)
         {
-          d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2/(2*sigma2[j]) )
+          d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2/(2*sigma2[j]) ) # somma su indexes
           phi[j,t] <- rinvgamma(n=1, shape=c_r, rate=d_r)
         }
         
         ## MU
-        magic <- 1/sigma2[j] * sum( basis2.t/phi[j,] )
+        magic <- matrix(0, nrow=L, ncol=L)
+        for(t in time.grid)
+        {
+          magic <- magic + ( basis.t[,t] %*% t(basis.t[,t]) )/(phi[j,t])
+        }
+        magic <- magic/sigma2[j]
         
-        Lambda_r <- solve(Lambda0_inv + r*magic*diag(L))
+        Lambda_r <- solve(Lambda0_inv + r*magic)
+        
         if(r>1)
         {
-          mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic * colSums(beta[indexes_j,]) )
+          mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% colSums(beta[indexes_j,]) )
         } else {
-          mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic * beta[indexes_j,] )
+          mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% beta[indexes_j,] )
         }
+        
         
         # sample coefficients of basis projection
         mu_coef[j,] <- mvrnorm(n=1, mu=mu_r, Sigma=Lambda_r)

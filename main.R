@@ -30,7 +30,7 @@ X <- X/rescale
 matplot(t(X), type='l')
 
 smoothing_list <- smoothing(X = X, 
-                            step = 1, 
+                            step = 5, 
                             nbasis = 30, 
                             spline_order = 4)
 
@@ -45,13 +45,14 @@ hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
                               beta = smoothing_list$beta)
 
 # or set them a caso
-# hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
+#L <- smoothing_list$smoothing_parameters$number_basis
+#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 100,
-            burnin = 0,
+out <- FBNP(n_iter = 3000,
+            burnin = 2000,
             thin = 1,
             M = 150,
             mass = 0.31,
@@ -68,7 +69,6 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 out[['algorithm_parameters']] <- NULL # ok ma perchè allora non salvarli direttamente da qui azichè farli restiruire da FBNP e poi rimuoverli?
 
 # save output
-#save(out, run_parameters, file = "Ultimo.RData")
-
+save(out, run_parameters, file = "Results/Aggiustato_2_01.RData")
 
 
