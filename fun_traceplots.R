@@ -12,8 +12,10 @@ fun_traceplots <- function (out,
                             blocks=1,
                             time=0.1,
                             mu_gif=FALSE,
-                            iter_step=10) # gif con 100 ci mette un fracco (10 min)
-                                          # modificare per vedere solo 10 cluster per volta
+                            falzo=FALSE)  
+  
+  # gif con 100 ci mette un fracco (10 min)
+  
   
 {
   
@@ -22,10 +24,12 @@ fun_traceplots <- function (out,
     library(magick)
     library(animation)
   }
-    
-  basis <- smoothing_list$basis
-  time.grid <- smoothing_list$time.grid
-  #step <- smoothing_list$smoothing_parameters$step
+  
+  if(falzo){
+    mu.lim    <- c(-5,5)
+  } else{
+    mu.lim    <- c(-150,150)
+  }
   
   K            <- out$K
   mu_coef_out  <- out$mu_coef_out
@@ -33,13 +37,21 @@ fun_traceplots <- function (out,
   probs_j_out  <- out$probs_j_out
   probs_ij_out <- out$probs_ij_out
   
-  n_iter <- run_parameters$algorithm_parameters[1]
-  burnin <- run_parameters$algorithm_parameters[2]
-  thin   <- run_parameters$algorithm_parameters[3]
-  M      <- run_parameters$algorithm_parameters[4]
-  mass   <- run_parameters$algorithm_parameters[5]
+  n         <- dim(smoothing_list$X)[1]
+  basis     <- smoothing_list$basis
+  time.grid <- smoothing_list$time.grid
+  #step     <- smoothing_list$smoothing_parameters$step
+  
+  n_iter <- run_parameters$algorithm_parameters[[1]]
+  burnin <- run_parameters$algorithm_parameters[[2]]
+  thin   <- run_parameters$algorithm_parameters[[3]]
+  M      <- run_parameters$algorithm_parameters[[4]]
+  mass   <- run_parameters$algorithm_parameters[[5]]
   
   nn <- n_iter-burnin
+  
+  if(iter_step==0)
+    iter_step = nn/50
   
   #### Traceplot Directory ####------------------------------------------------------------
   
@@ -92,15 +104,32 @@ fun_traceplots <- function (out,
   
   #### Cluster assignment ####-----------------------------------------------------------
   
+  # faccio due plot del cluster assignment, così non mi da prolemi di margin too large
+  nhalf <- round(n/2)
+  
+  # first half of observation
   X11(width=1300, height=700)
-  par(mfrow=c(5,5))
+  par(mfrow=n2mfrow(n/2))
   par(oma=c(0,0,2,0))
-  for(i in 1:22)
+  for(i in 1:nhalf)
   {
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i), ylim=c(0,150))
+    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   }
   title("Cluster assignment", outer = TRUE)
-  savePlot(filename = "Cluster_traceplot",
+  savePlot(filename = "Cluster_traceplot_1",
+           type = c("png"),
+           device = dev.cur())
+  
+  
+  X11(width=1300, height=700)
+  par(mfrow=n2mfrow(n-nhalf))
+  par(oma=c(0,0,2,0))
+  for(i in (nhalf+1):n)
+  {
+    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+  }
+  title("Cluster assignment", outer = TRUE)
+  savePlot(filename = "Cluster_traceplot_2",
            type = c("png"),
            device = dev.cur())
   
@@ -112,7 +141,7 @@ fun_traceplots <- function (out,
   #max(sigma2out.matrix[,16] -  sigma2_out[[16]])
   
   # for "blocks"
-  for(yo in blocks)
+  for(yo in 1:(M/10))
   {
     # I plot 10 kernels in each gif
     kernelz.to.plot <- (1+10*(yo-1)):(10*yo)
@@ -159,7 +188,7 @@ fun_traceplots <- function (out,
       kernel.upper <- max(kernelz.to.plot)
       
       print(paste0("Making a gif for mu(t), kernels: ",kernel.lower,"_",kernel.upper))
-      pb <- progressBar(0, max = nn, initial = 0, style = "ETA")
+      pb <- progressBar(0, max=nn-iter_step+1, initial = 0, style = "ETA")
       
       # traceplot as a gif
       saveGIF(
@@ -175,7 +204,7 @@ fun_traceplots <- function (out,
               # mu evaluated on the time grid
               mu_j <- mu_coef_j %*% basis.t
               # plot
-              matplot(t(mu_j), type='l', main=paste0("Kernel ",j), xlab="Iterations", ylim=c(-100,100))
+              matplot(t(mu_j), type='l', main=paste0("Kernel ",j), xlab="Iterations", ylim=mu.lim)
             }
             #mtext(paste0("Traceplots of mu(t), iteration = ", iter))
             title(paste0("mu(t), iteration ", iter), outer = TRUE)

@@ -62,7 +62,7 @@ out <- FBNP(n_iter = 5000,
             burnin = 3000,
             thin = 1,
             M = 150,
-            mass = 0.7,
+            mass = 0.7, # voglio provare con la massa alta
             smoothing = smoothing_list,
             hyperparam = hyper_list)
 
@@ -81,7 +81,7 @@ out[['algorithm_parameters']] <- NULL
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
 
 # save output
-#save(out, file="Results/out_nico_falZo_2_1.RData") 
+save(out, file="Results/out_nico_falZo_2_1.RData") 
 
 library(coda)
 library(devtools)
@@ -107,10 +107,32 @@ est_part_BINDER <- function(clust, PSM){
   return(clust[which.min(res_loss),])
 }
 
-part_BIN <- as.numeric(as.factor( est_part_BINDER(K) ))
+part_BIN <- as.numeric(as.factor( est_part_BINDER(K,PSM(K)) ))
 table(part_BIN)
 
 matplot(t(X), type="l", col=part_BIN)
+
+
+library(coda)
+library(devtools)
+library(mcclust.ext)
+
+part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)
+summary(part_BIN)
+
+# Plot of the partitions with the different methods
+x11()
+par(mfrow=c(2,3))
+for(ii in 1:5)
+  matplot(t(X), col=(part_BIN$cl)[ii,], type='l', main=(row.names(part_BIN$cl))[ii])
+
+
+# choose a single partition, in this case "avg"
+partition.BIN <- minbinder.ext(psm,cls.draw = K, method="draws")[[1]]
+
+x11()
+matplot(t(X), type="l", col=partition.BIN)
+
 
 
 
