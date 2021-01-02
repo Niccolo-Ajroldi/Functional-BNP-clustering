@@ -1,4 +1,3 @@
-
 library(invgamma)
 library(fda)
 library(MASS)
@@ -33,7 +32,7 @@ library(pbmcapply)
 #'         algorithm_parameters
 #' 
 
-FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
+new_FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
                   smoothing,
                   hyperparam)
   
@@ -45,7 +44,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   basis <- smoothing$basis
   beta <- smoothing$beta
   time.grid <- smoothing$time.grid
-
+  
   
   ##### PARAMETERS SETTING ------------------------------------------------------------------------
   
@@ -64,8 +63,8 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   a           <- hyperparam$a
   b           <- hyperparam$b
-  c           <- hyperparam$c 
-  d           <- hyperparam$d
+  C           <- hyperparam$C 
+  D           <- hyperparam$D
   m0          <- hyperparam$m0
   Lambda0     <- hyperparam$Lambda0
   Lambda0_inv <- solve(Lambda0)
@@ -81,7 +80,11 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   ## PHI
   # M x n_time matrix
   # (phi)_ij: phi_t del cluster i-esimo al time point j-esimo (j=1:1600)
-  phi <- matrix(rinvgamma(n=M*n_time, shape=c, rate=d), byrow=TRUE, nrow=M, ncol=n_time)
+  phi <- matrix(0, nrow=M, ncol=n_time)
+  for(t in time.grid)
+  {
+    phi[,t] <- rinvgamma(n=M, shape=C[t], rate=D[t])
+  }
   
   ## MU
   # M x L matrix
@@ -150,10 +153,11 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         sigma2[j] <- rinvgamma(n = 1, shape=a_r, rate=b_r)
         
         ## PHI
-        c_r <- c + r*0.5
-        for(t in 1:n_time)
+        
+        for(t in time.grid)
         {
-          d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2/(2*sigma2[j]) ) # somma su indexes
+          c_r <- C[t] + r*0.5
+          d_r <- D[t] + sum( (X[indexes_j,t] - mu[j,t])^2/(2*sigma2[j]) ) # somma su indexes
           phi[j,t] <- rinvgamma(n=1, shape=c_r, rate=d_r)
         }
         
@@ -186,7 +190,10 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         sigma2[j] <- rinvgamma(n = 1, shape=a, rate=b)
         
         ## PHI
-        phi[j,] <- rinvgamma(n=n_time, shape=c, rate=d)
+        for(t in time.grid)
+        {
+          phi[j,t] <- rinvgamma(n=1, shape=C[t], rate=D[t])
+        }
         
         ## MU
         # sample coefficients of basis projection
@@ -194,7 +201,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
         # evaluation of mu on the time grid
         mu[j,] <- mu_coef[j,] %*% basis.t
       }
-        
+      
     }
     
     #### STEP 2: K ####----------------------------------------------------------------------------
@@ -215,13 +222,13 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
       
       # update the cluster assignment at current iteration
       K_curr[i] <- sample(1:M, size=1, prob=p_i)
-
+      
       # save
       if(iter > burnin)
       {
         probs_ij[i,] <- p_i 
       }
-
+      
     }
     
     # save
@@ -276,7 +283,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   
   return(out)
-
+  
 }
 
 

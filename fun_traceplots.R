@@ -1,5 +1,7 @@
 
-setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+#setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+
 
 #library(installr)
 #install.ImageMagick()
@@ -73,13 +75,13 @@ fun_traceplots <- function (out,
     "M:      ", M, "\n",
     "Mass:   ", mass, "\n\n",
     
-    "PRIOR\n",
-    "var_sigma: ", run_parameters$prior_parameters$desired_prior_values[[1]], "\n",
-    "var_phi:   ", run_parameters$prior_parameters$desired_prior_values[[2]], "\n",
-    "a:         ", run_parameters$prior_parameters$a, "\n",
-    "b:         ", run_parameters$prior_parameters$b, "\n",
-    "c:         ", run_parameters$prior_parameters$c, "\n",
-    "d:         ", run_parameters$prior_parameters$d, "\n\n",
+    # "PRIOR\n",
+    # "var_sigma: ", run_parameters$prior_parameters$desired_prior_values[[1]], "\n",
+    # "var_phi:   ", run_parameters$prior_parameters$desired_prior_values[[2]], "\n",
+    # "a:         ", run_parameters$prior_parameters$a, "\n",
+    # "b:         ", run_parameters$prior_parameters$b, "\n",
+    # "c:         ", run_parameters$prior_parameters$c, "\n",
+    # "d:         ", run_parameters$prior_parameters$d, "\n\n",
     
     "SMOOTHING\n",
     "step:       ", run_parameters$smoothing_parameters$step, "\n",
