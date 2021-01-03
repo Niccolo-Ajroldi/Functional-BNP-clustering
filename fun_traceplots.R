@@ -1,5 +1,7 @@
 
-# se mu_gif==TRUE serve ImageMagick:
+# se mu_gif==TRUE serve ImageMagick e animation:
+#   install.packages("animation")
+#   require(installr)
 #   library(installr)
 #   install.ImageMagick()
 
@@ -36,10 +38,12 @@ fun_traceplots <- function (out,
   sigma2_out   <- out$sigma2_out
   probs_j_out  <- out$probs_j_out
   probs_ij_out <- out$probs_ij_out
+  phi_out      <- out$phi_out
   
   n         <- dim(smoothing_list$X)[1]
   basis     <- smoothing_list$basis
   time.grid <- smoothing_list$time.grid
+  n_time    <- length(time.grid)
   
   n_iter <- run_parameters$algorithm_parameters[[1]]
   burnin <- run_parameters$algorithm_parameters[[2]]
@@ -50,8 +54,8 @@ fun_traceplots <- function (out,
   # number of iterations after burnin
   nn <- n_iter-burnin
   
-  # show a gif once every iter_step
-  iter_step = nn/50
+  # show a gif once every iter_step (setted equal to 5 here)
+  iter_step = nn/50 
   
   
   #### Traceplot Directory ####------------------------------------------------------------

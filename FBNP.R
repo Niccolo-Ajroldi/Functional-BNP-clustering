@@ -107,6 +107,7 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   mu_coef_out <- vector("list", length = n_iter-burnin)
   sigma2_out  <- vector("list", length = n_iter-burnin)
+  phi_out <- vector("list", length = n_iter-burnin)
   
   # matrix that tells for each observation the probabilities of observation i belonging to cluster j after STEP 2
   probs_ij <- matrix(0, nrow = n, ncol = M)
@@ -116,7 +117,6 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
   
   # a list containing the probabilities p of belonging to a given cluster
   probs_j_out  <- vector("list", length = n_iter-burnin)
-  
   
   #### ALGORITHM ----------------------------------------------------------------------------------
   
@@ -251,6 +251,8 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
       mu_coef_out[[iter - burnin]] <- mu_coef
       sigma2_out [[iter - burnin]] <- sigma2
       probs_j_out[[iter - burnin]] <- p
+      
+      phi_out    [[iter - burnin]] <- phi
     }
     
     # ProgressBar
@@ -270,8 +272,8 @@ FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
                        'M' = M,
                        'mass' = mass)
   
-  out <- list(K, mu_coef_out, sigma2_out, probs_j_out, probs_ij_out, algo_parameters)
-  names(out) <- c("K", "mu_coef_out", "sigma2_out", "probs_j_out", "probs_ij_out", "algorithm_parameters")
+  out <- list(K, mu_coef_out, sigma2_out, phi_out, probs_j_out, probs_ij_out, algo_parameters)
+  names(out) <- c("K", "mu_coef_out", "sigma2_out", "phi_out", "probs_j_out", "probs_ij_out", "algorithm_parameters")
   
   
   return(out)

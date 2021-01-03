@@ -52,7 +52,7 @@ hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 100,
+out <- FBNP(n_iter = 300,
             burnin = 0,
             thin = 1,
             M = 150,
