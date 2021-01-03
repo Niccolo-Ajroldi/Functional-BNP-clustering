@@ -101,7 +101,7 @@ fun_traceplots <- function (out,
     "rescale:    ", run_parameters$smoothing_parameters$rescale_parameter, "\n",
     "eliminated: ", run_parameters$smoothing_parameters$observation_eliminated,
     
-    file="Output.txt"
+    file="Output.txt", sep=""
   )
   
   #### Cluster assignment ####-----------------------------------------------------------
