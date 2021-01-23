@@ -19,9 +19,9 @@ source('Smoothing.R')
 
 # simulate data from 2 Gaussian processes
 
-n.1 <- 20
-n.2 <- 30
-n <- n1+n2
+n.1 <- 30
+n.2 <- 20
+n <- n.1+n.2
 n_time <- 300
 time.grid <- seq(0, 10, length.out = 100)
 
@@ -29,9 +29,9 @@ time.grid <- seq(0, 10, length.out = 100)
 
 # tune correlation of simulated data:
 # increase alpha to increase variability in each point
-# increase beta to decrease variability between functions
-alpha <- 0.1
-beta  <- 1
+# increase beta to decrease covariance between times (high beta -> more rough function)
+alpha <- 0.05
+beta  <- 0.5
 psi.1 <- exp_cov_function(time.grid, alpha, beta)
 psi.2 <- psi.1
 image(psi.1,
@@ -50,8 +50,6 @@ data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
 data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
 
 X <- rbind(data.1, data.2)
-matplot(t(X), type='l', main="Simulated GP")
-
 col <- c(rep(1,n.1), rep(2,n.2))
 matplot(t(X), type='l', col=col, main="Simulated GP")
 
@@ -81,19 +79,6 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 10, 
-                              var_phi = 10,
-                              X = smoothing_list$X,
-                              beta = smoothing_list$beta)
-
-# or set them a caso
-#L <- smoothing_list$smoothing_parameters$number_basis
-#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
-
-
-#### HYPERPARAM #### -------------------------------------------------------------------------------
-
-# elicit hyperparameters
 hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta)
@@ -104,10 +89,10 @@ hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
 
 #### CALL #### --------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 10000,
-            burnin =  5000,
+out <- FBNP(n_iter = 1000,
+            burnin = 0,
             thin = 1,
-            M = 1000,
+            M = 3000,
             mass = 0.7,
             smoothing = smoothing_list,
             hyperparam = hyper_list)
@@ -122,7 +107,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL
 
-save(out, file="Results/out_nico_simulated_GP.RData") 
+#save(out, file="Results/out_nico_simulated_GP.RData") 
 
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
 
@@ -130,20 +115,18 @@ library(coda)
 library(devtools)
 library(mcclust.ext)
 
-K <- out$K
+# traceplot of cluster allocation variables
+source("traceplot_K.R")
+traceplot_K(out, smoothing_list, run_parameters)  
 
+# posterior similarity matrix
 source("PSM.R")
+K <- out$K
 psm <- PSM(K)
-
 {x11(); heatmap(psm, Rowv = NA, Colv = NA)}
-
 {x11(); plotpsm(psm)}
 
-
-library(coda)
-library(devtools)
-library(mcclust.ext)
-
+# estimate best partition
 part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)
 summary(part_BIN)
 
@@ -155,11 +138,9 @@ for(ii in 1:5)
 
 
 # choose a single partition, in this case "avg"
-partition.BIN <- minbinder.ext(psm,cls.draw = K, method="avg")[[1]]
+partition.BIN <- minbinder.ext(psm,cls.draw = K, method="draws")[[1]]
 
 x11()
 matplot(t(X), type="l", col=partition.BIN)
-
-
 
 
