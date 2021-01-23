@@ -28,9 +28,9 @@ fun_traceplots <- function (out,
   }
   
   if(falzo){
-    mu.lim    <- c(-5,5)
+    mu.lim <- c(-5,5)
   } else{
-    mu.lim    <- c(-150,150)
+    mu.lim <- c(-150,150)
   }
   
   K            <- out$K

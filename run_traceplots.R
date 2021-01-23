@@ -4,7 +4,7 @@
 setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
-#load("Results/Nico_31_12.RData")
+#load("Results/Nico_M50_4_01.RData")
 
 source("fun_traceplots.R")
 

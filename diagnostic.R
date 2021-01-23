@@ -101,7 +101,7 @@ matplot(t(X), col=partition, type='l')
 
 # partition by clusters
 x11()
-par(mfrow = c(3,2))
+par(mfrow = c(3,3))
 count <- 1
 for(j in levels(as.factor(partition)))
 {
