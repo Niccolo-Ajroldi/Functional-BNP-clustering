@@ -17,7 +17,7 @@ hyperparameters <- function(var_sigma, var_phi, X_obs, beta){
   
   #### phi_t : c,d ####
   ## phi_t ~ IG(c,d) forall t
-  mean_phi <- 1
+  mean_phi <- 1 
   c <- mean_phi^2/var_phi + 2
   d <- mean_phi^3/var_phi + mean_phi
   if(c<=2 | d<0)
