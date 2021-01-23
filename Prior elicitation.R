@@ -26,7 +26,7 @@ hyperparameters <- function(var_sigma, var_phi, X_obs, beta){
   #### mu : m0,Lambda0 ####
   ## mu ~ N_L(m0,Lambda0)
   m0 <- colMeans(beta)
-  Lambda0 <- diag(diag(cov(beta)))
+  Lambda0 <- cov(beta)
   
   desired_prior_values <- c('var_sigma' = var_sigma,
                             'var_phi' = var_phi)

@@ -53,9 +53,10 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 100, var_phi = 100,
-                              X = smoothing_list$X,
-                              beta = smoothing_list$beta)
+hyper_list <- hyperparameters(var_sigma = 10, 
+                              var_phi = 10,
+
+
 
 # or set them a caso
 #L <- smoothing_list$smoothing_parameters$number_basis
@@ -79,7 +80,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
                        'smoothing_parameters' = smoothing_list$smoothing_parameters
                        )
 
-out[['algorithm_parameters']] <- NULL # ok ma perchè allora non salvarli direttamente da qui azichè farli restiruire da FBNP e poi rimuoverli?
+out[['algorithm_parameters']] <- NULL # ok ma perchÃ¨ allora non salvarli direttamente da qui azichÃ¨ farli restiruire da FBNP e poi rimuoverli?
 
 # save output
 #save(out, run_parameters, file = "Results/Nico_M50_4_01.RData")
