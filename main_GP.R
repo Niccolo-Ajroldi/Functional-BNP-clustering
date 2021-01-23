@@ -1,13 +1,15 @@
 
-#setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
 setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
 cat("\014")
 
 library(fda)
 library(fdakma)
+library(roahd)
 
 source("FBNP.R")
 source("Prior Elicitation.R")
@@ -15,15 +17,47 @@ source('Smoothing.R')
 
 #### DATA #### -------------------------------------------------------------------------------
 
-# load data
-data(kma.data)
-X <- kma.data$y0 # matrix n x n_time
-time.grid <- (kma.data$x)[1,] # time grid
-#time.grid <- 1:200
+# simulate data from 2 Gaussian processes
 
-n_time <- length(time.grid)
+n.1 <- 20
+n.2 <- 30
+n <- n1+n2
+n_time <- 300
+time.grid <- seq(0, 10, length.out = 100)
 
-matplot(t(X), type='l')
+# Exponential covariance function over a time.grid
+
+# tune correlation of simulated data:
+# increase alpha to increase variability in each point
+# increase beta to decrease variability between functions
+alpha <- 0.1
+beta  <- 1
+psi.1 <- exp_cov_function(time.grid, alpha, beta)
+psi.2 <- psi.1
+image(psi.1,
+      main = 'Exponential covariance function',
+      xlab = 'time.grid', ylab = 'time.grid')
+
+# mean function
+mu.1 <- sin(0.2*pi*time.grid)
+mu.2 <- sin(0.35*pi*(time.grid-4))
+plot(time.grid, mu.1, ylab = "y(t)", type='l', col=1)
+lines(time.grid, mu.2, ylab = "y(t)", type='l', col=2)
+
+#to simulate data you use...
+set.seed(1)
+data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
+data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
+
+X <- rbind(data.1, data.2)
+matplot(t(X), type='l', main="Simulated GP")
+
+col <- c(rep(1,n.1), rep(2,n.2))
+matplot(t(X), type='l', col=col, main="Simulated GP")
+
+# rescale data
+rescale <- 1 # rescale <- max(X)
+X <- X/rescale 
 
 # basis 
 L <- 30
@@ -38,12 +72,24 @@ beta <- t(X_smoothed_f$fd$coefs)
 smoothing_parameters <- list('step' = 1,
                              'number_basis' = L,
                              'spline_order' = 4)
-
 smoothing_list <- list('basis' = basis,
                        'beta'= beta,
                        'time.grid' = time.grid,
                        'X' = X,
                        'smoothing_parameters' = smoothing_parameters)
+
+#### HYPERPARAM #### -------------------------------------------------------------------------------
+
+# elicit hyperparameters
+hyper_list <- hyperparameters(var_sigma = 10, 
+                              var_phi = 10,
+                              X = smoothing_list$X,
+                              beta = smoothing_list$beta)
+
+# or set them a caso
+#L <- smoothing_list$smoothing_parameters$number_basis
+#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
+
 
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
@@ -58,14 +104,13 @@ hyper_list <- hyperparameters(var_sigma = 10, var_phi = 10,
 
 #### CALL #### --------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 5000,
-            burnin = 3000,
+out <- FBNP(n_iter = 10000,
+            burnin =  5000,
             thin = 1,
-            M = 150,
-            mass = 0.7, # voglio provare con la massa alta
+            M = 1000,
+            mass = 0.7,
             smoothing = smoothing_list,
             hyperparam = hyper_list)
-
 
 
 ### SAVE OUTPUT #### -------------------------------------------------------------------------
@@ -73,15 +118,13 @@ out <- FBNP(n_iter = 5000,
 run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
                        'prior_parameters' = hyper_list,
                        'smoothing_parameters' = smoothing_list$smoothing_parameters
-                       )
+)
 
 out[['algorithm_parameters']] <- NULL
 
-save(out, file="Results/out_nico_falZo_2_1.RData") 
-
+save(out, file="Results/out_nico_simulated_GP.RData") 
 
 #### DIAGNOSTIC #### -------------------------------------------------------------------------
-
 
 library(coda)
 library(devtools)
@@ -92,25 +135,9 @@ K <- out$K
 source("PSM.R")
 psm <- PSM(K)
 
-x11()
-heatmap(psm, Rowv = NA, Colv = NA)
+{x11(); heatmap(psm, Rowv = NA, Colv = NA)}
 
-est_part_BINDER <- function(clust, PSM){
-  res_loss <- c()
-  for(i in 1:nrow(clust)){
-    # rappresentazione binaria della partizione
-    binary_part <- sapply(clust[i,], function(x) as.numeric(x == clust[i,]))
-    # loss per la partizione i
-    res_loss[i] <- sum(abs(binary_part - PSM))
-  }
-  # tra le iterazioni trova quella che minimizza
-  return(clust[which.min(res_loss),])
-}
-
-part_BIN <- as.numeric(as.factor( est_part_BINDER(K,PSM(K)) ))
-table(part_BIN)
-
-matplot(t(X), type="l", col=part_BIN)
+{x11(); plotpsm(psm)}
 
 
 library(coda)
@@ -128,7 +155,7 @@ for(ii in 1:5)
 
 
 # choose a single partition, in this case "avg"
-partition.BIN <- minbinder.ext(psm,cls.draw = K, method="draws")[[1]]
+partition.BIN <- minbinder.ext(psm,cls.draw = K, method="avg")[[1]]
 
 x11()
 matplot(t(X), type="l", col=partition.BIN)
