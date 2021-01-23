@@ -21,9 +21,12 @@ X <- kma.data$y0 # matrix n x n_time
 time.grid <- (kma.data$x)[1,] # time grid
 #time.grid <- 1:200
 
-n_time <- length(time.grid)
+png(file = "Falzo.png", width = 4500, height = 4000, units = "px", res = 1000)
+matplot(time.grid, t(X), type='l', lwd=1, lty=2, 
+        main="", xlab="x", ylab="y")
+dev.off()
 
-matplot(t(X), type='l')
+n_time <- length(time.grid)
 
 # basis 
 L <- 30
