@@ -12,6 +12,7 @@ library(fdakma)
 library(roahd)
 
 source("FBNP.R")
+source("FBNP_hyper.R")
 source("Prior Elicitation.R")
 source('Smoothing.R')
 
@@ -58,7 +59,7 @@ rescale <- 1 # rescale <- max(X)
 X <- X/rescale 
 
 # basis 
-L <- 30
+L <- 20
 basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
 
 # smooth data
@@ -90,12 +91,12 @@ hyper_list <- hyperparameters(var_sigma = 3, var_phi = 3,
 #### CALL ####--------------------------------------------------------------------------
 
 out <- FBNP(n_iter = 30,
-            burnin = 0,
-            thin = 1,
-            M = 3000,
-            mass = 0.5,
-            smoothing = smoothing_list,
-            hyperparam = hyper_list)
+                  burnin = 0,
+                  thin = 1,
+                  M = 3000,
+                  mass = 0.5,
+                  smoothing = smoothing_list,
+                  hyperparam = hyper_list)
 
 
 ### SAVE OUTPUT ####-------------------------------------------------------------------------
