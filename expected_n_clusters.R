@@ -3,7 +3,7 @@
 n <- dim(X)[1]
   
 # total mass parameter
-mass <- 2
+mass <- 0.3
 
 # expected number of clusters
 sum(mass/(mass+0:(n-1)))
@@ -22,6 +22,8 @@ M <- 50
 mass <- 2
 n <- 26
 4*n*exp(-(M-1)/mass) 
+# NOPEEEEEEEEEEEEEE (infinite dimensional problem, I&W è pe runidimansionale, no?)
+
 
 # secondo me non ha più molto senso mettere massa tale per cui vengano solo 2 custer
 # perchè abbiam notato che anche i GOSE son molto diversi uno dall'altro

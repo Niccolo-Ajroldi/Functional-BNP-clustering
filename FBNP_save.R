@@ -8,6 +8,7 @@ library(pbmcapply)
 #' 
 #' Bayesian Nonparamteric clustering of functional data.
 #'
+#'
 #' @param n_iter number of iterations
 #' @param burnin number of burnin iterations 
 #' @param thin thinning step
@@ -24,15 +25,15 @@ library(pbmcapply)
 #' 
 #' 
 #' @return a list with the following components:
-#'         K: (n_iter-burnin) x n matrix, [K]ij = cluster of observation j at iteration i
+#'         K:            (n_iter-burnin) x n matrix, [K]ij = cluster of observation j at iteration i
+#'         mu_coef_out:  (n_iter-burnin)-long list, keeps track of mu_coef
+#'         sigma2_out:   (n_iter-burnin)-long list, keeps track og sigma2
+#'         probs_j_out:  (n_iter-burnin)-long list, keeps track of the probability of each cluster
+#'         probs_ij_out: (n_iter-burnin)-long list, keeps track of the probabilities (matrix) of each observation to fall in each cluster  
 #'         algorithm_parameters
 #' 
 
-FBNP <- function (n_iter, 
-                  burnin=0, 
-                  thin=1, 
-                  M, 
-                  mass,
+FBNP <- function (n_iter, burnin=0, thin=1, M, mass,
                   smoothing,
                   hyperparam)
   
@@ -44,7 +45,7 @@ FBNP <- function (n_iter,
   basis <- smoothing$basis
   beta <- smoothing$beta
   time.grid <- smoothing$time.grid
-
+  
   
   ##### PARAMETERS SETTING ------------------------------------------------------------------------
   
@@ -99,8 +100,23 @@ FBNP <- function (n_iter,
   
   # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
   # per le iterazioni dopo il burnin
-  K_curr <- sample(1:M, size=n) # perché non facciamo sample 1:M?
+  K_curr <- sample(1:n, size=n) # perché non facciamo sample 1:M?
   #K_curr <- rep(1,n)
+  
+  #### RETURN VARIABLES ---------------------------------------------------------------------------
+  
+  mu_coef_out <- vector("list", length = n_iter-burnin)
+  sigma2_out  <- vector("list", length = n_iter-burnin)
+  phi_out <- vector("list", length = n_iter-burnin)
+  
+  # matrix that tells for each observation the probabilities of observation i belonging to cluster j after STEP 2
+  probs_ij <- matrix(0, nrow = n, ncol = M)
+  
+  # a list containing the above defined matrix for each iteration
+  probs_ij_out <- vector("list", length = n_iter-burnin)
+  
+  # a list containing the probabilities p of belonging to a given cluster
+  probs_j_out  <- vector("list", length = n_iter-burnin)
   
   #### ALGORITHM ----------------------------------------------------------------------------------
   
@@ -177,7 +193,7 @@ FBNP <- function (n_iter,
         # evaluation of mu on the time grid
         mu[j,] <- mu_coef[j,] %*% basis.t
       }
-        
+      
     }
     
     #### STEP 2: K ####----------------------------------------------------------------------------
@@ -196,16 +212,24 @@ FBNP <- function (n_iter,
       }
       p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
       p_i <- exp(p_i)#/sum(exp(p_i))
-
+      
       # update the cluster assignment at current iteration
       K_curr[i] <- sample(1:M, size=1, prob=p_i)
-
+      
       # save
       if(iter > burnin)
       {
+        probs_ij[i,] <- p_i
         K[iter-burnin,i] <- K_curr[i]
       }
-
+      
+    }
+    
+    # save
+    if(iter > burnin)
+    {
+      #K[iter-burnin,] <- K_curr
+      probs_ij_out[[iter - burnin]] <- probs_ij
     }
     
     #### STEP 3: weights ####----------------------------------------------------------------------
@@ -221,6 +245,17 @@ FBNP <- function (n_iter,
     
     V[M] <- 1
     p[M] <- V[M] * prod(1 - V[1:(M - 1)])
+    
+    
+    # save
+    if(iter > burnin)
+    {
+      mu_coef_out[[iter - burnin]] <- mu_coef
+      sigma2_out [[iter - burnin]] <- sigma2
+      probs_j_out[[iter - burnin]] <- p
+      
+      phi_out    [[iter - burnin]] <- phi
+    }
     
     # ProgressBar
     setTxtProgressBar(pb, iter)
@@ -239,11 +274,12 @@ FBNP <- function (n_iter,
                        'M' = M,
                        'mass' = mass)
   
-  out <- list(K, algo_parameters)
-  names(out) <- c("K", "algorithm_parameters")
+  out <- list(K, mu_coef_out, sigma2_out, phi_out, probs_j_out, probs_ij_out, algo_parameters)
+  names(out) <- c("K", "mu_coef_out", "sigma2_out", "phi_out", "probs_j_out", "probs_ij_out", "algorithm_parameters")
+  
   
   return(out)
-
+  
 }
 
 
