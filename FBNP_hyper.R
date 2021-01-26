@@ -45,7 +45,6 @@ FBNP_hyper <- function (n_iter,
   beta <- smoothing$beta
   time.grid <- smoothing$time.grid
   
-  
   ##### PARAMETERS SETTING ------------------------------------------------------------------------
   
   # number of data
@@ -85,20 +84,33 @@ FBNP_hyper <- function (n_iter,
   # (phi)_ij: phi_t del cluster i-esimo al time point j-esimo (j=1:1600)
   phi <- matrix(rinvgamma(n=M*n_time, shape=c, rate=d), byrow=TRUE, nrow=M, ncol=n_time)
   
-  ## mu
+  ## mu_coef (coefficients of basis projection of mu)
   mu_coef <- matrix(0, nrow=M, ncol=L) # sample coefficients of basis projection
   for(j in 1:M)
   {
+    # sample Lambda0 (covariance of mu_coef[j,])
     Lambda0 <- LaplacesDemon::rinvwishart(nu0, delta0)
+    # sample m0 (mean of mu_coef[j,])
     m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0)
-    mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0) # sample coefficients of basis projection
+    # sample mu_coef[j,] (coefficients of basis projection of mu)
+    mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
   }
-
+  
+  #plot(time.grid, mu_coef[1,]%*%basis.t, type='l')
+  #plot(time.grid, t(basis.t)%*%mu_coef[1,], type='l')
+  
+  
   ## MU
   # (mu)it = mu_i(t)
   # M x L matrix
-  mu <- matrix(mu_coef %*% basis.t, byrow=TRUE, nrow=M, ncol=n_time) # evaluation of mu on the time grid
+  # evaluation of mu on the time grid
   
+  # sbagliato:
+  #mu <- matrix(mu_coef %*% basis.t, byrow=TRUE, nrow=M, ncol=n_time) 
+  
+  # giusto:
+  mu <- matrix(mu_coef %*% basis.t, byrow=FALSE, nrow=M, ncol=n_time)
+  #plot(time.grid, mu[1,], type='l')
   
   #### ALGORITHM PARAMETERS -----------------------------------------------------------------------
   
@@ -107,11 +119,11 @@ FBNP_hyper <- function (n_iter,
   p <- rep(1/M, M)
   
   #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
-  K <- matrix(0,nrow=(n_iter-burnin),ncol=n)
+  K <- matrix(0, nrow=(n_iter-burnin), ncol=n)
   
   # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
   # per le iterazioni dopo il burnin
-  K_curr <- sample(1:M, size=n) # perché non facciamo sample 1:M?
+  K_curr <- sample(1:n)
   #K_curr <- rep(1,n)
   
   #### ALGORITHM ----------------------------------------------------------------------------------
@@ -149,7 +161,7 @@ FBNP_hyper <- function (n_iter,
         c_r <- c + r*0.5
         for(t in 1:n_time)
         {
-          d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2/(2*sigma2[j]) ) # somma su indexes
+          d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2 )/(2*sigma2[j]) # somma su indexes
           phi[j,t] <- rinvgamma(n=1, shape=c_r, rate=d_r)
         }
         
@@ -158,36 +170,35 @@ FBNP_hyper <- function (n_iter,
         k.n <- k0 + 1
         theta.n <- (k0*theta0 + mu_coef[j,])/k.n
         delta.n <- delta0 + k0/k.n * (mu_coef[j,]-theta0) %*% t(mu_coef[j,]-theta0)
-        Lambda0 <- LaplacesDemon::rinvwishart(nu.n, delta.n) # TODO:LAMBDA
+        Lambda0 <- LaplacesDemon::rinvwishart(nu.n, delta.n) # TODO: change name
         Lambda0_inv <- solve(Lambda0)
         
         ## m0
-        m0 <- mvrnorm(n=1, mu=theta.n, Sigma=Lambda0)
+        m0 <- mvrnorm(n=1, mu=theta.n, Sigma=Lambda0) # TODO: change name
         
-        ## MU
+        ## mu_coef (coefficients of basis projection)
+        # first compute coefficients of the posterior distribution of mu_coef:
         magic <- matrix(0, nrow=L, ncol=L)
         for(t in 1:n_time)
         {
           magic <- magic + ( basis.t[,t] %*% t(basis.t[,t]) )/(phi[j,t])
         }
         magic <- magic/sigma2[j]
-        
         Lambda_r <- solve(Lambda0_inv + r*magic)
-        
         if(r>1)
         {
           mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% colSums(beta[indexes_j,]) )
         } else {
           mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% beta[indexes_j,] )
         }
-        
-        # sample coefficients of basis projection
+        # then sample mu_coef:
         mu_coef[j,] <- mvrnorm(n=1, mu=mu_r, Sigma=Lambda_r)
         
-        # evaluation of mu on the time grid
-        mu[j,] <- mu_coef[j,] %*% basis.t
+        ## MU
+        mu[j,] <- mu_coef[j,] %*% basis.t # evaluation of mu on the time grid
         
       } else {
+        
         ## SIGMA2
         sigma2[j] <- rinvgamma(n = 1, shape=a, rate=b)
         
@@ -200,11 +211,11 @@ FBNP_hyper <- function (n_iter,
         ## m0
         m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0)
         
-        ## MU
-        # sample coefficients of basis projection
+        ## mu_coef: sample coefficients of basis projection
         mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
-        # evaluation of mu on the time grid
-        mu[j,] <- mu_coef[j,] %*% basis.t
+        
+        ## MU
+        mu[j,] <- mu_coef[j,] %*% basis.t # evaluation of mu on the time grid
       }
       
     }
@@ -221,15 +232,15 @@ FBNP_hyper <- function (n_iter,
       # iterate over kernels
       for(j in 1:M)
       {
-        p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*sigma2[j]*phi[j,]) )
+        p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*sigma2[j]*phi[j,]) ) # sum over times
       }
-      p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
+      #p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
       p_i <- exp(p_i)#/sum(exp(p_i))
       
       # update the cluster assignment at current iteration
       K_curr[i] <- sample(1:M, size=1, prob=p_i)
       
-      # save
+      # save K
       if(iter > burnin)
       {
         K[iter-burnin,i] <- K_curr[i]

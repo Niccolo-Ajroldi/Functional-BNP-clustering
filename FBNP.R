@@ -44,7 +44,6 @@ FBNP <- function (n_iter,
   basis <- smoothing$basis
   beta <- smoothing$beta
   time.grid <- smoothing$time.grid
-
   
   ##### PARAMETERS SETTING ------------------------------------------------------------------------
   
@@ -85,8 +84,8 @@ FBNP <- function (n_iter,
   ## MU
   # M x L matrix
   # (mu)it = mu_i(t)
-  mu_coef <- matrix(mvrnorm(n=M, mu=m0, Sigma=Lambda0), byrow=TRUE, nrow=M, ncol=L) # sample coefficients of basis projection
-  mu <- matrix(mu_coef %*% basis.t, byrow=TRUE, nrow=M, ncol=n_time) # evaluation of mu on the time grid
+  mu_coef <- matrix(mvrnorm(n=M, mu=m0, Sigma=Lambda0), byrow=FALSE, nrow=M, ncol=L) # sample coefficients of basis projection
+  mu <- matrix(mu_coef %*% basis.t, byrow=FALSE, nrow=M, ncol=n_time) # evaluation of mu on the time grid
   
   #### ALGORITHM PARAMETERS -----------------------------------------------------------------------
   
@@ -194,7 +193,7 @@ FBNP <- function (n_iter,
       {
         p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*sigma2[j]*phi[j,]) )
       }
-      p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
+      #p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
       p_i <- exp(p_i)#/sum(exp(p_i))
 
       # update the cluster assignment at current iteration

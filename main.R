@@ -11,6 +11,7 @@ library(fda)
 library(fdakma)
 library(latex2exp)
 source("FBNP.R")
+source("FBNP_hyper.R")
 source("Prior Elicitation.R")
 source('Smoothing.R')
 
@@ -49,8 +50,8 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 10, 
-                              var_phi = 10,
+hyper_list <- hyperparameters(var_sigma = 1, 
+                              var_phi = 1,
                               X = smoothing_list$X,
                               beta = smoothing_list$beta)
 
@@ -62,13 +63,14 @@ hyper_list <- hyperparameters(var_sigma = 10,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 30,
-            burnin = 0,
-            thin = 1,
-            M = 1000,
-            mass = 2,
-            smoothing = smoothing_list,
-            hyperparam = hyper_list)
+out <- FBNP_hyper(n_iter = 25,
+                  burnin = 0,
+                  thin = 1,
+                  M = 10000,
+                  mass = 1,
+                  smoothing = smoothing_list,
+                  hyperparam = hyper_list)
+
 
 ### SAVE OUTPUT #### -------------------------------------------------------------------------
 

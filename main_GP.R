@@ -24,14 +24,14 @@ n.1 <- 15
 n.2 <- 15
 n <- n.1+n.2
 n_time <- 300
-time.grid <- seq(0, 10, length.out = 100)
+time.grid <- seq(0, 10, length.out = 75)
 
 # Exponential covariance function over a time.grid
 
 # tune correlation of simulated data:
 # increase alpha to increase variability in each point
 # increase beta to decrease covariance between times (high beta -> more rough function)
-alpha <- 0.05
+alpha <- 0.02
 beta  <- 0.5
 psi.1 <- exp_cov_function(time.grid, alpha, beta)
 psi.2 <- psi.1
@@ -59,7 +59,7 @@ rescale <- 1 # rescale <- max(X)
 X <- X/rescale 
 
 # basis 
-L <- 20
+L <- 25
 basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
 
 # smooth data
@@ -80,20 +80,17 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 3, var_phi = 3, 
+hyper_list <- hyperparameters(var_sigma = 1, var_phi = 1, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta)
-
-# or set them a caso
-#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
 
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 30,
+out <- FBNP_hyper(n_iter = 1000,
                   burnin = 0,
                   thin = 1,
-                  M = 3000,
+                  M = 10000,
                   mass = 0.5,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
@@ -108,7 +105,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL
 
-#save(out, file="Results/out_nico_simulated_GP_100iter_M_5000_covfull.RData") 
+#save(out, file="Results/out_nico_simulated_GP_M_100k.RData") 
 
 #### DIAGNOSTIC ####-------------------------------------------------------------------------
 
