@@ -58,6 +58,10 @@ FBNP_hyper <- function (n_iter,
   # basis.t: (L x n_time) matrix of basis fuctions evaluated on the time time grid
   basis.t <- t(eval.basis(time.grid, basis))
   
+  # TODO: booh
+  # uso i dati smoothed:
+  X <- beta %*% basis.t
+  
   #### HYPERPARAMETERS ----------------------------------------------------------------------------
   
   a           <- hyperparam$a
