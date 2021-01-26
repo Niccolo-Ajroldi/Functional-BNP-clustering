@@ -235,6 +235,7 @@ FBNP_hyper <- function (n_iter,
         p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*sigma2[j]*phi[j,]) ) # sum over times
       }
       #p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
+      #p_i <- p_i - min(p_i)
       p_i <- exp(p_i)#/sum(exp(p_i))
       
       # update the cluster assignment at current iteration
