@@ -23,7 +23,7 @@ source('Smoothing.R')
 n.1 <- 15
 n.2 <- 15
 n <- n.1+n.2
-n_time <- 300
+#n_time <- 300
 time.grid <- seq(0, 10, length.out = 75)
 
 # Exponential covariance function over a time.grid
@@ -59,7 +59,7 @@ rescale <- 1 # rescale <- max(X)
 X <- X/rescale 
 
 # basis 
-L <- 25
+L <- 20
 basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
 
 # smooth data
@@ -80,17 +80,17 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 1, var_phi = 1, 
+hyper_list <- hyperparameters(var_phi = 100, 
                               X = smoothing_list$X,
-                              beta = smoothing_list$beta)
+                              beta = smoothing_list$beta,
+                              scale = 1000)
 
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 100,
+out <- FBNP_hyper(n_iter = 50,
                   burnin = 0,
-                  thin = 1,
-                  M = 10000,
+                  M = 5000,
                   mass = 0.5,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)

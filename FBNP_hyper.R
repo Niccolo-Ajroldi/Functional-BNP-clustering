@@ -10,7 +10,6 @@ library(pbmcapply)
 #'
 #' @param n_iter number of iterations
 #' @param burnin number of burnin iterations 
-#' @param thin thinning step
 #' @param M stick-breaking representation
 #' @param mass total mass parameter
 #' 
@@ -29,8 +28,7 @@ library(pbmcapply)
 #' 
 
 FBNP_hyper <- function (n_iter, 
-                  burnin=0, 
-                  thin=1, 
+                  burnin=0,
                   M, 
                   mass,
                   smoothing,
@@ -64,24 +62,14 @@ FBNP_hyper <- function (n_iter,
   
   #### HYPERPARAMETERS ----------------------------------------------------------------------------
   
-  a           <- hyperparam$a
-  b           <- hyperparam$b
-  c           <- hyperparam$c 
-  d           <- hyperparam$d
-  #m0          <- hyperparam$m0
-  #Lambda0     <- hyperparam$Lambda0
-  #Lambda0_inv <- solve(Lambda0)
+  c      <- hyperparam$c 
+  d      <- hyperparam$d
   theta0 <- hyperparam$m0
   k0     <- L
   nu0    <- L
   delta0 <- hyperparam$Lambda0
   
   #### LATENT RV'S INITIALIZATION -----------------------------------------------------------------
-  
-  ## SIGMA2
-  # numeric(M)
-  # (sigma2)_i: sigma^2 del cluster i-esimo
-  sigma2 <- rinvgamma(n = M, shape=a, rate=b)
   
   ## PHI
   # M x n_time matrix
@@ -100,21 +88,7 @@ FBNP_hyper <- function (n_iter,
     mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
   }
   
-  #plot(time.grid, mu_coef[1,]%*%basis.t, type='l')
-  #plot(time.grid, t(basis.t)%*%mu_coef[1,], type='l')
-  
-  
-  ## MU
-  # (mu)it = mu_i(t)
-  # M x L matrix
-  # evaluation of mu on the time grid
-  
-  # sbagliato:
-  #mu <- matrix(mu_coef %*% basis.t, byrow=TRUE, nrow=M, ncol=n_time) 
-  
-  # giusto:
   mu <- matrix(mu_coef %*% basis.t, byrow=FALSE, nrow=M, ncol=n_time)
-  #plot(time.grid, mu[1,], type='l')
   
   #### ALGORITHM PARAMETERS -----------------------------------------------------------------------
   
@@ -152,20 +126,11 @@ FBNP_hyper <- function (n_iter,
       # if the kernel is not empty
       if(r>0)
       {
-        ## SIGMA2
-        a_r <- a + r*n_time*0.5
-        b_r <- b
-        for(g in indexes_j)
-        {
-          b_r <- b_r + 0.5*sum( (X[g,] - mu[j,])^2/phi[j,] ) # somma sui tempi
-        }
-        sigma2[j] <- rinvgamma(n = 1, shape=a_r, rate=b_r)
-        
         ## PHI
         c_r <- c + r*0.5
         for(t in 1:n_time)
         {
-          d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2 )/(2*sigma2[j]) # somma su indexes
+          d_r <- d + sum( (X[indexes_j,t] - mu[j,t])^2 )/2 # somma su indexes
           phi[j,t] <- rinvgamma(n=1, shape=c_r, rate=d_r)
         }
         
@@ -187,7 +152,6 @@ FBNP_hyper <- function (n_iter,
         {
           magic <- magic + ( basis.t[,t] %*% t(basis.t[,t]) )/(phi[j,t])
         }
-        magic <- magic/sigma2[j]
         Lambda_r <- solve(Lambda0_inv + r*magic)
         if(r>1)
         {
@@ -202,9 +166,6 @@ FBNP_hyper <- function (n_iter,
         mu[j,] <- mu_coef[j,] %*% basis.t # evaluation of mu on the time grid
         
       } else {
-        
-        ## SIGMA2
-        sigma2[j] <- rinvgamma(n = 1, shape=a, rate=b)
         
         ## PHI
         phi[j,] <- rinvgamma(n=n_time, shape=c, rate=d)
@@ -236,7 +197,7 @@ FBNP_hyper <- function (n_iter,
       # iterate over kernels
       for(j in 1:M)
       {
-        p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*sigma2[j]*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*sigma2[j]*phi[j,]) ) # sum over times
+        p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*phi[j,]) ) # sum over times
       }
       #p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
       #p_i <- p_i - min(p_i)

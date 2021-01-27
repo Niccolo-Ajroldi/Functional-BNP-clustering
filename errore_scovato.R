@@ -4,7 +4,6 @@ aa <- c(1,2)
 bb <- c(3,4)
 cc <- cbind(aa,bb)
 cc
-cc
 matrix(cc, byrow=TRUE, nrow=2, ncol=2) # DIOCANE
 
 
