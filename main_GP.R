@@ -12,9 +12,12 @@ library(fdakma)
 library(roahd)
 
 source("FBNP.R")
+source("FBNP_hyper_alltime.R")
+source("new_FBNP.R")
 source("FBNP_hyper.R")
 source("Prior Elicitation.R")
 source('Smoothing.R')
+source("new_Prior_elicitation.R")
 
 #### DATA ####-------------------------------------------------------------------------------
 
@@ -24,14 +27,14 @@ n.1 <- 15
 n.2 <- 15
 n <- n.1+n.2
 #n_time <- 300
-time.grid <- seq(0, 10, length.out = 75)
+time.grid <- seq(0, 10, length.out = 50)
 
 # Exponential covariance function over a time.grid
 
 # tune correlation of simulated data:
 # increase alpha to increase variability in each point
 # increase beta to decrease covariance between times (high beta -> more rough function)
-alpha <- 0.02
+alpha <- 0.1
 beta  <- 0.5
 psi.1 <- exp_cov_function(time.grid, alpha, beta)
 psi.2 <- psi.1
@@ -59,7 +62,7 @@ rescale <- 1 # rescale <- max(X)
 X <- X/rescale 
 
 # basis 
-L <- 20
+L <- 15
 basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
 
 # smooth data
@@ -80,20 +83,20 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 100, 
+hyper_list <- hyperparameters(var_phi = 1e5, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
-                              scale = 1000)
+                              scale = 1)
 
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 50,
-                  burnin = 0,
-                  M = 5000,
-                  mass = 0.5,
-                  smoothing = smoothing_list,
-                  hyperparam = hyper_list)
+out <- FBNP_hyper(n_iter = 3000,
+                          burnin = 0,
+                          M = 2000,
+                          mass = 0.5,
+                          smoothing = smoothing_list,
+                          hyperparam = hyper_list)
 
 
 ### SAVE OUTPUT ####-------------------------------------------------------------------------
@@ -105,7 +108,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL
 
-#save(out, file="Results/out_nico_simulated_GP_M_100k.RData") 
+save(out, file="Results/out_post_corrado.RData") 
 
 #### DIAGNOSTIC ####-------------------------------------------------------------------------
 
@@ -116,6 +119,10 @@ library(mcclust.ext)
 # traceplot of cluster allocation variables
 source("traceplot_K.R")
 traceplot_K(out, smoothing_list, run_parameters)  
+
+n.1+n.2
+apply(out$K[-1,], 2, max)
+
 
 # posterior similarity matrix
 source("PSM.R")
@@ -136,7 +143,7 @@ for(ii in 1:5)
 
 
 # choose a single partition, in this case "avg"
-partition.BIN <- minbinder.ext(psm,cls.draw = K, method="avg")[[1]]
+partition.BIN <- minbinder.ext(psm,cls.draw = K, method="draws")[[1]]
 
 x11()
 matplot(t(X), type="l", col=partition.BIN)

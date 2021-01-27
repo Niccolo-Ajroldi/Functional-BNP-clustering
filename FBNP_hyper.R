@@ -101,7 +101,8 @@ FBNP_hyper <- function (n_iter,
   
   # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
   # per le iterazioni dopo il burnin
-  K_curr <- sample(1:n)
+  #K_curr <- sample(1:n)
+  K_curr <- sample(1:M, size=n)
   #K_curr <- rep(1,n)
   
   #### ALGORITHM ----------------------------------------------------------------------------------
@@ -191,7 +192,7 @@ FBNP_hyper <- function (n_iter,
     #        (lo sovrascriviamo per ogni i dentro il ciclo)
     p_i <- numeric(M)
     
-    # iterate over the observations
+    # iterate over observations
     for(i in 1:n)
     {
       # iterate over kernels

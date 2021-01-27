@@ -26,7 +26,7 @@ traceplot_K <- function (out,
   par(mfrow=n2mfrow(n/2))
   par(oma=c(0,0,2,0))
   for(i in 1:nhalf)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    traceplot(as.mcmc(K[-1,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables ", plot.title), outer = TRUE)
   
@@ -35,7 +35,7 @@ traceplot_K <- function (out,
   par(mfrow=n2mfrow(n-nhalf))
   par(oma=c(0,0,2,0))
   for(i in (nhalf+1):n)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    traceplot(as.mcmc(K[-1,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables ", plot.title), outer = TRUE)
   

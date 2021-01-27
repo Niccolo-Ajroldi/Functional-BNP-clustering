@@ -1,3 +1,4 @@
+
 library(invgamma)
 library(fda)
 library(MASS)
@@ -6,7 +7,6 @@ library(pbmcapply)
 
 #' 
 #' Bayesian Nonparamteric clustering of functional data.
-#'
 #'
 #' @param n_iter number of iterations
 #' @param burnin number of burnin iterations 
@@ -23,15 +23,14 @@ library(pbmcapply)
 #' 
 #' 
 #' @return a list with the following components:
-#'         K:            (n_iter-burnin) x n matrix, [K]ij = cluster of observation j at iteration i
-#'         mu_coef_out:  (n_iter-burnin)-long list, keeps track of mu_coef
-#'         sigma2_out:   (n_iter-burnin)-long list, keeps track og sigma2
-#'         probs_j_out:  (n_iter-burnin)-long list, keeps track of the probability of each cluster
-#'         probs_ij_out: (n_iter-burnin)-long list, keeps track of the probabilities (matrix) of each observation to fall in each cluster  
+#'         K: (n_iter-burnin) x n matrix, [K]ij = cluster of observation j at iteration i
 #'         algorithm_parameters
 #' 
 
-new_FBNP <- function (n_iter, burnin=0, M, mass,
+FBNP_hyper_alltime <- function (n_iter, 
+                  burnin=0,
+                  M, 
+                  mass,
                   smoothing,
                   hyperparam)
   
@@ -43,7 +42,6 @@ new_FBNP <- function (n_iter, burnin=0, M, mass,
   basis <- smoothing$basis
   beta <- smoothing$beta
   time.grid <- smoothing$time.grid
-  
   
   ##### PARAMETERS SETTING ------------------------------------------------------------------------
   
@@ -58,32 +56,43 @@ new_FBNP <- function (n_iter, burnin=0, M, mass,
   # basis.t: (L x n_time) matrix of basis fuctions evaluated on the time time grid
   basis.t <- t(eval.basis(time.grid, basis))
   
+  # TODO: booh
+  # uso i dati smoothed:
+  X <- beta %*% basis.t
+  
   #### HYPERPARAMETERS ----------------------------------------------------------------------------
   
-  C           <- hyperparam$C 
-  D           <- hyperparam$D
-  m0          <- hyperparam$m0
-  Lambda0     <- hyperparam$Lambda0
-  Lambda0_inv <- solve(Lambda0)
-  
+  C      <- hyperparam$C 
+  D      <- hyperparam$D
+  theta0 <- hyperparam$m0
+  k0     <- L
+  nu0    <- L
+  delta0 <- hyperparam$Lambda0
   
   #### LATENT RV'S INITIALIZATION -----------------------------------------------------------------
-
   
   ## PHI
   # M x n_time matrix
   # (phi)_ij: phi_t del cluster i-esimo al time point j-esimo (j=1:1600)
   phi <- matrix(0, nrow=M, ncol=n_time)
-  for(t in time.grid)
+  for(t in 1:n_time)
   {
     phi[,t] <- rinvgamma(n=M, shape=C[t], rate=D[t])
   }
   
-  ## MU
-  # M x L matrix
-  # (mu)it = mu_i(t)
-  mu_coef <- matrix(mvrnorm(n=M, mu=m0, Sigma=Lambda0), byrow=TRUE, nrow=M, ncol=L) # sample coefficients of basis projection
-  mu <- matrix(mu_coef %*% basis.t, byrow=FALSE, nrow=M, ncol=n_time) # evaluation of mu on the time grid
+  ## mu_coef (coefficients of basis projection of mu)
+  mu_coef <- matrix(0, nrow=M, ncol=L) # sample coefficients of basis projection
+  for(j in 1:M)
+  {
+    # sample Lambda0 (covariance of mu_coef[j,])
+    Lambda0 <- LaplacesDemon::rinvwishart(nu0, delta0)
+    # sample m0 (mean of mu_coef[j,])
+    m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0)
+    # sample mu_coef[j,] (coefficients of basis projection of mu)
+    mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
+  }
+  
+  mu <- matrix(mu_coef %*% basis.t, byrow=FALSE, nrow=M, ncol=n_time)
   
   #### ALGORITHM PARAMETERS -----------------------------------------------------------------------
   
@@ -92,25 +101,12 @@ new_FBNP <- function (n_iter, burnin=0, M, mass,
   p <- rep(1/M, M)
   
   #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
-  K <- matrix(0,nrow=(n_iter-burnin),ncol=n)
+  K <- matrix(0, nrow=(n_iter-burnin), ncol=n)
   
   # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
   # per le iterazioni dopo il burnin
-  K_curr <- sample(1:n, size=n) # perché non facciamo sample 1:M?
+  K_curr <- sample(1:M, size=n)
   #K_curr <- rep(1,n)
-  
-  #### RETURN VARIABLES ---------------------------------------------------------------------------
-  
-  mu_coef_out <- vector("list", length = n_iter-burnin)
-  # matrix that tells for each observation the probabilities of observation i belonging to cluster j after STEP 2
-  probs_ij <- matrix(0, nrow = n, ncol = M)
-  
-  # a list containing the above defined matrix for each iteration
-  probs_ij_out <- vector("list", length = n_iter-burnin)
-  
-  # a list containing the probabilities p of belonging to a given cluster
-  probs_j_out  <- vector("list", length = n_iter-burnin)
-  
   
   #### ALGORITHM ----------------------------------------------------------------------------------
   
@@ -134,39 +130,45 @@ new_FBNP <- function (n_iter, burnin=0, M, mass,
       # if the kernel is not empty
       if(r>0)
       {
-        
         ## PHI
         
-        for(t in time.grid)
+        for(t in 1:n_time)
         {
           c_r <- C[t] + r*0.5
           d_r <- D[t] + sum( (X[indexes_j,t] - mu[j,t])^2/2) # somma su indexes
           phi[j,t] <- rinvgamma(n=1, shape=c_r, rate=d_r)
         }
         
-        ## MU
+        ## Lambda0
+        nu.n <- nu0 + 1
+        k.n <- k0 + 1
+        theta.n <- (k0*theta0 + mu_coef[j,])/k.n
+        delta.n <- delta0 + k0/k.n * (mu_coef[j,]-theta0) %*% t(mu_coef[j,]-theta0)
+        Lambda0 <- LaplacesDemon::rinvwishart(nu.n, delta.n) # TODO: change name
+        Lambda0_inv <- solve(Lambda0)
+        
+        ## m0
+        m0 <- mvrnorm(n=1, mu=theta.n, Sigma=Lambda0) # TODO: change name
+        
+        ## mu_coef (coefficients of basis projection)
+        # first compute coefficients of the posterior distribution of mu_coef:
         magic <- matrix(0, nrow=L, ncol=L)
-        for(t in time.grid)
+        for(t in 1:n_time)
         {
           magic <- magic + ( basis.t[,t] %*% t(basis.t[,t]) )/(phi[j,t])
         }
-
-        
         Lambda_r <- solve(Lambda0_inv + r*magic)
-        
         if(r>1)
         {
           mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% colSums(beta[indexes_j,]) )
         } else {
           mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% beta[indexes_j,] )
         }
-        
-        
-        # sample coefficients of basis projection
+        # then sample mu_coef:
         mu_coef[j,] <- mvrnorm(n=1, mu=mu_r, Sigma=Lambda_r)
         
-        # evaluation of mu on the time grid
-        mu[j,] <- mu_coef[j,] %*% basis.t
+        ## MU
+        mu[j,] <- mu_coef[j,] %*% basis.t # evaluation of mu on the time grid
         
       } else {
         
@@ -176,18 +178,25 @@ new_FBNP <- function (n_iter, burnin=0, M, mass,
           phi[j,t] <- rinvgamma(n=1, shape=C[t], rate=D[t])
         }
         
-        ## MU
-        # sample coefficients of basis projection
+        ## Lambda0
+        Lambda0 <- LaplacesDemon::rinvwishart(nu0, delta0) # TODO:LAMBDA
+        
+        ## m0
+        m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0)
+        
+        ## mu_coef: sample coefficients of basis projection
         mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
-        # evaluation of mu on the time grid
-        mu[j,] <- mu_coef[j,] %*% basis.t
+        
+        ## MU
+        mu[j,] <- mu_coef[j,] %*% basis.t # evaluation of mu on the time grid
       }
       
     }
     
     #### STEP 2: K ####----------------------------------------------------------------------------
     
-    # (pi)j: probability that observation i belongs to cluster j
+    # (pi)j: probability that observation i belongs to cluster j, Ki~discrete(p_i[1],...,p_i[M]) 
+    #        (lo sovrascriviamo per ogni i dentro il ciclo)
     p_i <- numeric(M)
     
     # iterate over the observations
@@ -196,27 +205,21 @@ new_FBNP <- function (n_iter, burnin=0, M, mass,
       # iterate over kernels
       for(j in 1:M)
       {
-        p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*phi[j,]) - (X[i,]-mu[j,])^2/(2*phi[j,]) )
+        p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*phi[j,]) ) # sum over times
       }
-      p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
-      p_i <- exp(p_i)/sum(exp(p_i))
+      #p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
+      #p_i <- p_i - min(p_i)
+      p_i <- exp(p_i)#/sum(exp(p_i))
       
       # update the cluster assignment at current iteration
       K_curr[i] <- sample(1:M, size=1, prob=p_i)
       
-      # save
+      # save K
       if(iter > burnin)
       {
-        probs_ij[i,] <- p_i 
+        K[iter-burnin,i] <- K_curr[i]
       }
       
-    }
-    
-    # save
-    if(iter > burnin)
-    {
-      K[iter - burnin,] <- K_curr
-      probs_ij_out[[iter - burnin]] <- probs_ij
     }
     
     #### STEP 3: weights ####----------------------------------------------------------------------
@@ -233,14 +236,6 @@ new_FBNP <- function (n_iter, burnin=0, M, mass,
     V[M] <- 1
     p[M] <- V[M] * prod(1 - V[1:(M - 1)])
     
-    
-    # save
-    if(iter > burnin)
-    {
-      mu_coef_out[[iter - burnin]] <- mu_coef
-      probs_j_out[[iter - burnin]] <- p
-    }
-    
     # ProgressBar
     setTxtProgressBar(pb, iter)
     
@@ -254,12 +249,12 @@ new_FBNP <- function (n_iter, burnin=0, M, mass,
   
   algo_parameters <- c('n_iter' = n_iter,
                        'burnin' = burnin,
+                       'thinning' = thin,
                        'M' = M,
                        'mass' = mass)
   
-  out <- list(K, mu_coef_out, probs_j_out, probs_ij_out, algo_parameters)
-  names(out) <- c("K", "mu_coef_out", "probs_j_out", "probs_ij_out", "algorithm_parameters")
-  
+  out <- list(K, algo_parameters)
+  names(out) <- c("K", "algorithm_parameters")
   
   return(out)
   
