@@ -55,7 +55,9 @@ data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
 
 X <- rbind(data.1, data.2)
 col <- c(rep(1,n.1), rep(2,n.2))
+png(file = "pics/Simulated_GP.png", width = 8000, height = 5000, units = "px", res = 800)
 matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
+dv.off()
 
 # rescale data
 rescale <- 1 # rescale <- max(X)
