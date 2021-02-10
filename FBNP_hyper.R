@@ -57,7 +57,7 @@ FBNP_hyper <- function (n_iter,
   basis.t <- t(eval.basis(time.grid, basis))
   
   # TODO: booh
-  # uso i dati smoothed:
+  # smooth data:
   X <- beta %*% basis.t
   
   #### HYPERPARAMETERS ----------------------------------------------------------------------------
@@ -73,21 +73,22 @@ FBNP_hyper <- function (n_iter,
   
   ## PHI
   # M x n_time matrix
-  # (phi)_ij: phi_t del cluster i-esimo al time point j-esimo (j=1:1600)
+  # (phi)_ij: phi_t del cluster i-esimo al time point j-esimo (j=1:n_time)
   phi <- matrix(rinvgamma(n=M*n_time, shape=c, rate=d), byrow=TRUE, nrow=M, ncol=n_time)
   
-  ## mu_coef (coefficients of basis projection of mu)
-  mu_coef <- matrix(0, nrow=M, ncol=L) # sample coefficients of basis projection
+  ## MU
+  # first draw mu_coef (coefficients of basis projection of mu)
+  mu_coef <- matrix(0, nrow=M, ncol=L)
   for(j in 1:M)
   {
     # sample Lambda0 (covariance of mu_coef[j,])
     Lambda0 <- LaplacesDemon::rinvwishart(nu0, delta0)
     # sample m0 (mean of mu_coef[j,])
-    m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0)
+    m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0/k0) # TODO: check, ho aggiunto qui /k0
     # sample mu_coef[j,] (coefficients of basis projection of mu)
     mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
   }
-  
+  # then reconstruct mu on the time grid
   mu <- matrix(mu_coef %*% basis.t, byrow=FALSE, nrow=M, ncol=n_time)
   
   #### ALGORITHM PARAMETERS -----------------------------------------------------------------------
@@ -96,7 +97,7 @@ FBNP_hyper <- function (n_iter,
   V <- numeric(M)
   p <- rep(1/M, M)
   
-  #(K)_ij: cluster di assegnazione all'iterazione i dell'osservazione j
+  #(K)_ij: cluster assignment at iteration i of observation j
   K <- matrix(0, nrow=(n_iter-burnin), ncol=n)
   
   # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
@@ -172,10 +173,10 @@ FBNP_hyper <- function (n_iter,
         phi[j,] <- rinvgamma(n=n_time, shape=c, rate=d)
         
         ## Lambda0
-        Lambda0 <- LaplacesDemon::rinvwishart(nu0, delta0) # TODO:LAMBDA
+        Lambda0 <- LaplacesDemon::rinvwishart(nu0, delta0) # TODO: change name
         
         ## m0
-        m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0)
+        m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0/k0) # TODO: change name, TODO: check, ho aggiunto qui /k0
         
         ## mu_coef: sample coefficients of basis projection
         mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
