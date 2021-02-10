@@ -11,9 +11,6 @@ The core of the Gibbs Sampler is implemented in the function `FBNP.R`.
 
 Qui mettiamo una bella foto del modello presa da Latex oppure riportiamo il codice latex in markdown.
 
-[comment]: <> ( ![alt text](https://github.com/angelopasquale/bayesian_statistics_project/blob/master/images/model-1.png)
-
-
 ### Repository structure
 
 Folders and codes are structured in the following way:
