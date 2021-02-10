@@ -24,6 +24,9 @@ The file `install.R` provides automatic installation of the required packages, w
 
 ### Simulated data
 
+![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Simulated_GP.png)
+
+
 ### Clinical data
 
 ### References
