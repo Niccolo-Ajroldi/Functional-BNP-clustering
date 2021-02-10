@@ -1,25 +1,184 @@
+# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
-sigma.var.grid <- seq(0.1,2, length=50)
-#phi.var.grid <- seq(0.1,10, length=10)
+rm(list=ls())
+cat("\014")
 
-for(jj in 1:length(sigma.var.grid))
+library(fda)
+library(fdakma)
+library(roahd)
+library(coda)
+
+source("FBNP.R")
+source("FBNP_hyper_alltime.R")
+source("new_FBNP.R")
+source("FBNP_hyper.R")
+source("Prior Elicitation.R")
+source('Smoothing.R')
+source("new_Prior_elicitation.R")
+
+#### DATA ####-------------------------------------------------------------------------------
+
+# simulate data from 2 Gaussian processes
+
+n.1 <- 10
+n.2 <- 10
+n <- n.1+n.2
+n_time <- 50
+time.grid <- seq(0, 10, length.out = n_time)
+
+# Exponential covariance function over a time.grid
+
+# tune correlation of simulated data:
+# increase alpha to increase variability in each point
+# increase beta to decrease covariance between times (high beta -> more rough function)
+alpha <- 0.05
+beta  <- 0.5
+psi.1 <- exp_cov_function(time.grid, alpha, beta)
+psi.2 <- psi.1
+
+# mean function
+mu.1 <- sin(0.2*pi*time.grid)
+mu.2 <- sin(0.35*pi*(time.grid-4))
+
+# simulate data
+set.seed(1)
+data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
+data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
+
+X <- rbind(data.1, data.2)
+col <- c(rep(1,n.1), rep(2,n.2))
+
+# rescale data
+rescale <- 1 # rescale <- max(X)
+X <- X/rescale 
+
+# basis 
+L <- 15
+basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
+
+# smooth data
+X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
+
+# save coefficients
+beta <- t(X_smoothed_f$fd$coefs)
+
+smoothing_parameters <- list('step' = 1,
+                             'number_basis' = L,
+                             'spline_order' = 4)
+smoothing_list <- list('basis' = basis,
+                       'beta'= beta,
+                       'time.grid' = time.grid,
+                       'X' = X,
+                       'smoothing_parameters' = smoothing_parameters)
+
+###############################################################################################
+
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+
+phi.var.grid <- c(1, 1e1, 1e2, 1e3, 1e4, 1e5)
+jj = 1
+
+for(phi.var in phi.var.grid)
 {
   print(jj)
-  sigma.var <- sigma.var.grid[jj]
-  phi.var   <- sigma.var.grid[jj]
-  out <- FBNP(n_iter = 20,
-              burnin = 0,
-              thin = 1,
-              M = 1000,
-              mass = 2,
-              smoothing = smoothing_list,
-              hyperparam = hyper_list)
+  jj = jj+1
+  
+  hyper_list <- hyperparameters(var_phi = phi.var, 
+                                X = smoothing_list$X,
+                                beta = smoothing_list$beta,
+                                scale = 1)
+
+  out <- FBNP_hyper(n_iter = 500,
+                    burnin = 0,
+                    M = 500,
+                    mass = 0.5,
+                    smoothing = smoothing_list,
+                    hyperparam = hyper_list)
+
   run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
                          'prior_parameters'     = hyper_list,
                          'smoothing_parameters' = smoothing_list$smoothing_parameters)
-  traceplot_K(out, 
-              smoothing_list, 
-              run_parameters,
-              plot.title = paste0("Var(sigma)=",sigma.var)
-              )  
+
+  
+  # save old directory to get back there at the end
+  dir.current <- getwd()
+  
+  # name of directory where I will put plots, I use current time in the name
+  new.dir <- paste0(dir.current,"/Results/TEST_10_2/var_phi_",phi.var)
+  
+  # create such directory and go there
+  dir.create(new.dir)
+  setwd(new.dir) 
+  
+  # save RData ----------------------------------------------------------------------
+  save(out, run_parameters, file = "Output.RData")
+  
+  # save traceplots -----------------------------------------------------------------
+  # extract content of out
+  K         <- out$K
+  n         <- dim(smoothing_list$X)[1]
+  basis     <- smoothing_list$basis
+  time.grid <- smoothing_list$time.grid
+  n_time    <- length(time.grid)
+  n_iter    <- run_parameters$algorithm_parameters[[1]]
+  burnin    <- run_parameters$algorithm_parameters[[2]]
+  M         <- run_parameters$algorithm_parameters[[3]]
+  mass      <- run_parameters$algorithm_parameters[[4]]
+  
+  # faccio due plot del cluster assignment, così non mi da prolemi di margin too large
+  nhalf <- round(n/2)
+  
+  # first half of observation
+  png(file = "Traceplot_K_1.png", width = 8000, height = 5000, units = "px", res = 800)
+  par(mfrow=n2mfrow(n/2))
+  par(oma=c(0,0,2,0))
+  for(i in 1:nhalf)
+    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+  #title("Cluster allocation variables", outer = TRUE)
+  title(paste0("Cluster allocation variables "), outer = TRUE)
+  dev.off()
+  
+  # second half of observations
+  png(file = "Traceplot_K_2.png", width = 8000, height = 5000, units = "px", res = 800)
+  par(mfrow=n2mfrow(n-nhalf))
+  par(oma=c(0,0,2,0))
+  for(i in (nhalf+1):n)
+    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+  #title("Cluster allocation variables", outer = TRUE)
+  title(paste0("Cluster allocation variables "), outer = TRUE)
+  dev.off()
+  
+  for(i in 1:n)
+  {
+    png(file = paste0("Obs_",i,".png"), width = 8000, height = 5000, units = "px", res = 800)
+    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    dev.off()
+  }
+  
+  
+  
+  # print information on a txt file -----------------------------------------------------
+  cat(
+    "ALGORITHM\n",
+    "Iter:   ", n_iter, "\n",
+    "Burnin: ", burnin, "\n",
+    "M:      ", M, "\n",
+    "Mass:   ", mass, "\n\n",
+    
+    "SMOOTHING\n",
+    "step:       ", run_parameters$smoothing_parameters$step, "\n",
+    "L:          ", run_parameters$smoothing_parameters$number_basis, "\n",
+    "rescale:    ", run_parameters$smoothing_parameters$rescale_parameter, "\n",
+    "eliminated: ", run_parameters$smoothing_parameters$observation_eliminated,
+    
+    "var phi:    ", hyper_list$desired_prior_values,
+    
+    file="Output.txt", sep=""
+  )
+  
+  setwd(dir.current)
+  
 }

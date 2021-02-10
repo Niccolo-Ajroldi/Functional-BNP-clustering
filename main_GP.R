@@ -23,18 +23,18 @@ source("new_Prior_elicitation.R")
 
 # simulate data from 2 Gaussian processes
 
-n.1 <- 15
-n.2 <- 15
+n.1 <- 10
+n.2 <- 10
 n <- n.1+n.2
-#n_time <- 300
-time.grid <- seq(0, 10, length.out = 50)
+n_time <- 50
+time.grid <- seq(0, 10, length.out = n_time)
 
 # Exponential covariance function over a time.grid
 
 # tune correlation of simulated data:
 # increase alpha to increase variability in each point
 # increase beta to decrease covariance between times (high beta -> more rough function)
-alpha <- 0.1
+alpha <- 0.05
 beta  <- 0.5
 psi.1 <- exp_cov_function(time.grid, alpha, beta)
 psi.2 <- psi.1
@@ -48,7 +48,7 @@ mu.2 <- sin(0.35*pi*(time.grid-4))
 plot(time.grid, mu.1, ylab = "y(t)", type='l', col=1)
 lines(time.grid, mu.2, ylab = "y(t)", type='l', col=2)
 
-#to simulate data you use...
+# simulate data
 set.seed(1)
 data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
 data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
@@ -83,7 +83,7 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 1e5, 
+hyper_list <- hyperparameters(var_phi = 1, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
@@ -91,9 +91,9 @@ hyper_list <- hyperparameters(var_phi = 1e5,
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 3000,
+out <- FBNP_hyper(n_iter = 300,
                           burnin = 0,
-                          M = 2000,
+                          M = 500,
                           mass = 0.5,
                           smoothing = smoothing_list,
                           hyperparam = hyper_list)
@@ -108,7 +108,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL
 
-save(out, file="Results/out_post_corrado.RData") 
+#save(out, file="Results/out_post_corrado.RData") 
 
 #### DIAGNOSTIC ####-------------------------------------------------------------------------
 
@@ -122,7 +122,6 @@ traceplot_K(out, smoothing_list, run_parameters)
 
 n.1+n.2
 apply(out$K[-1,], 2, max)
-
 
 # posterior similarity matrix
 source("PSM.R")

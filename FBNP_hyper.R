@@ -243,7 +243,6 @@ FBNP_hyper <- function (n_iter,
   
   algo_parameters <- c('n_iter' = n_iter,
                        'burnin' = burnin,
-                       'thinning' = thin,
                        'M' = M,
                        'mass' = mass)
   

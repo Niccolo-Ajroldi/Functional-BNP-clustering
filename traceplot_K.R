@@ -14,9 +14,8 @@ traceplot_K <- function (out,
   n_time    <- length(time.grid)
   n_iter    <- run_parameters$algorithm_parameters[[1]]
   burnin    <- run_parameters$algorithm_parameters[[2]]
-  thin      <- run_parameters$algorithm_parameters[[3]]
-  M         <- run_parameters$algorithm_parameters[[4]]
-  mass      <- run_parameters$algorithm_parameters[[5]]
+  M         <- run_parameters$algorithm_parameters[[3]]
+  mass      <- run_parameters$algorithm_parameters[[4]]
   
   # faccio due plot del cluster assignment, così non mi da prolemi di margin too large
   nhalf <- round(n/2)
