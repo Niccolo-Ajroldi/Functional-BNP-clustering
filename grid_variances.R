@@ -77,8 +77,12 @@ smoothing_list <- list('basis' = basis,
 ###############################################################################################
 
 setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+source("PSM.R")
+library(coda)
+library(devtools)
+library(mcclust.ext)
 
-phi.var.grid <- c(1, 1e1, 1e2, 1e3, 1e4, 1e5)
+phi.var.grid <- c(1e1, 1e2, 1e3, 1e4, 1e5)
 jj = 1
 
 for(phi.var in phi.var.grid)
@@ -86,12 +90,12 @@ for(phi.var in phi.var.grid)
   print(jj)
   jj = jj+1
   
-  hyper_list <- hyperparameters(var_phi = phi.var, 
+  hyper_list <- new_hyperparameters(var_phi = phi.var, 
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
                                 scale = 1)
 
-  out <- FBNP_hyper(n_iter = 500,
+  out <- FBNP_hyper_alltime(n_iter = 500,
                     burnin = 0,
                     M = 500,
                     mass = 0.5,
@@ -107,7 +111,7 @@ for(phi.var in phi.var.grid)
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/TEST_10_2/var_phi_",phi.var)
+  new.dir <- paste0(dir.current,"/Results/TEST_10_2/all_times/var_phi_",phi.var)
   
   # create such directory and go there
   dir.create(new.dir)
@@ -157,6 +161,22 @@ for(phi.var in phi.var.grid)
     traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
     dev.off()
   }
+  
+  # PSM
+  K <- out$K
+  psm <- PSM(K)
+  png(file = paste0("PSM.png"), width = 8000, height = 5000, units = "px", res = 800)
+  heatmap(psm, Rowv = NA, Colv = NA)
+  dev.off()
+  
+  # estimate best partition
+  part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)
+  best.partition <- part_BIN$cl["best",]
+  
+  png(file = paste0("Partition.png"), width = 8000, height = 5000, units = "px", res = 800)
+  matplot(t(X), type="l", col=best.partition)
+  dev.off()
+  
   
   
   

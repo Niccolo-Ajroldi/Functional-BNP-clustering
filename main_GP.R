@@ -55,9 +55,7 @@ data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
 
 X <- rbind(data.1, data.2)
 col <- c(rep(1,n.1), rep(2,n.2))
-png(file = "pics/Simulated_GP.png", width = 8000, height = 5000, units = "px", res = 800)
 matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
-dv.off()
 
 # rescale data
 rescale <- 1 # rescale <- max(X)
@@ -85,7 +83,7 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 1, 
+hyper_list <- new_hyperparameters(var_phi = 1, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
@@ -93,7 +91,7 @@ hyper_list <- hyperparameters(var_phi = 1,
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 300,
+out <- FBNP_hyper_alltime(n_iter = 10,
                           burnin = 0,
                           M = 500,
                           mass = 0.5,
