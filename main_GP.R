@@ -71,6 +71,11 @@ X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
 # save coefficients
 beta <- t(X_smoothed_f$fd$coefs)
 
+# plot smoothed data
+basis.t <- t(eval.basis(time.grid, basis))
+X_smooth <- beta %*% basis.t
+matplot(time.grid, t(X_smooth), type='l', col=col)
+
 smoothing_parameters <- list('step' = 1,
                              'number_basis' = L,
                              'spline_order' = 4)
@@ -83,7 +88,7 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 1e7, 
+hyper_list <- hyperparameters(var_phi = 0.1, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
@@ -91,9 +96,9 @@ hyper_list <- hyperparameters(var_phi = 1e7,
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 500,
+out <- FBNP_hyper(n_iter = 300,
                           burnin = 0,
-                          M = 1000,
+                          M = 500,
                           mass = 0.5,
                           smoothing = smoothing_list,
                           hyperparam = hyper_list)
@@ -108,7 +113,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL
 
-#save(out, file="Results/out_post_corrado.RData") 
+#save(out, file="Results/nico_11_2") 
 
 #### DIAGNOSTIC ####-------------------------------------------------------------------------
 
@@ -129,6 +134,12 @@ K <- out$K
 psm <- PSM(K)
 {x11(); heatmap(psm, Rowv = NA, Colv = NA)}
 {x11(); plotpsm(psm)}
+
+# estimate best partition
+part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)
+best.partition <- part_BIN$cl["best",]
+x11()
+matplot(t(X), type="l", col=best.partition)
 
 # estimate best partition
 part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)

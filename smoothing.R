@@ -32,3 +32,4 @@ smoothing <- function(X, step=1, nbasis, spline_order=4){
               'X' = X,
               'smoothing_parameters' = smoothing_parameters))
 }
+

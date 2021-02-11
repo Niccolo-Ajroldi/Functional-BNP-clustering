@@ -8,7 +8,8 @@ hyperparameters <- function(var_phi, X_obs, beta, scale=1){
   
   #### phi_t : c,d ####
   ## phi_t ~ IG(c,d) forall t
-  mean_phi <- mean(apply(X_obs,MARGIN=2,FUN=var)) * scale
+  mean_phi <- 10
+  #mean_phi <- mean(apply(X_obs,MARGIN=2,FUN=var)) * scale
   
   c <- mean_phi^2/var_phi + 2
   d <- mean_phi^3/var_phi + mean_phi
