@@ -65,9 +65,9 @@ FBNP_hyper <- function (n_iter,
   c      <- hyperparam$c 
   d      <- hyperparam$d
   theta0 <- hyperparam$m0
-  k0     <- L
-  nu0    <- L
-  delta0 <- hyperparam$Lambda0
+  k0     <- 0.1
+  nu0    <- L-1 + 1
+  delta0 <- hyperparam$Lambda0 * (nu0-L+1)
   
   #### LATENT RV'S INITIALIZATION -----------------------------------------------------------------
   

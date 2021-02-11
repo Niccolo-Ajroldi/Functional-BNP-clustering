@@ -12,6 +12,7 @@ library(fdakma)
 library(latex2exp)
 source("FBNP.R")
 source("FBNP_hyper.R")
+source("FBNP_hyper_alltime.R")
 source("Prior Elicitation.R")
 source('Smoothing.R')
 
@@ -36,38 +37,38 @@ X <- X[-eliminate,] # matrix n x n_time, HO TOLTO ANCHE LA 24
 #rescale <- 1 # 
 rescale <- max(X)
 X <- X/rescale 
-
 matplot(t(X), type='l')
 
+# cut x-axis
+X_1 <- X[,seq(151,1050)]
+matplot(t(X_1), type='l')
+dim(X_1)
+X <- X_1
+
 smoothing_list <- smoothing(X = X, 
-                            step = 5, 
+                            step = 15, 
                             nbasis = 25, 
                             spline_order = 4)
 
 smoothing_list[['smoothing_parameters']][['rescale_parameter']] <- rescale
 smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminate
 
+
+
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_sigma = 1, 
-                              var_phi = 1,
+hyper_list <- hyperparameters(var_phi = 1e4, 
                               X = smoothing_list$X,
-                              beta = smoothing_list$beta)
-
-
-# or set them a caso
-#L <- smoothing_list$smoothing_parameters$number_basis
-#hyper_list <- list(a=2.1, b=1, c=2.1, d=1, m0=rep(0,L), Lambda0=diag(1,L))
-
+                              beta = smoothing_list$beta,
+                              scale = 1)
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 25,
+out <- FBNP_hyper(n_iter = 500,
                   burnin = 0,
-                  thin = 1,
-                  M = 10000,
-                  mass = 1,
+                  M = 1000,
+                  mass = 0.5,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
 
@@ -94,6 +95,17 @@ library(mcclust.ext)
 source("traceplot_K.R")
 traceplot_K(out, smoothing_list, run_parameters)  
 
+source("PSM.R")
+K <- out$K
+psm <- PSM(K)
+{x11(); heatmap(psm, Rowv = NA, Colv = NA)}
+{x11(); plotpsm(psm)}
+
+# estimate best partition
+part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)
+best.partition <- part_BIN$cl["best",]
+x11()
+matplot(t(X), type="l", col=best.partition)
 
 
 

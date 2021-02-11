@@ -26,7 +26,7 @@ source("new_Prior_elicitation.R")
 n.1 <- 10
 n.2 <- 10
 n <- n.1+n.2
-n_time <- 50
+n_time <- 100
 time.grid <- seq(0, 10, length.out = n_time)
 
 # Exponential covariance function over a time.grid
@@ -83,7 +83,7 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- new_hyperparameters(var_phi = 1, 
+hyper_list <- hyperparameters(var_phi = 1e7, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
@@ -91,9 +91,9 @@ hyper_list <- new_hyperparameters(var_phi = 1,
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP_hyper_alltime(n_iter = 10,
+out <- FBNP_hyper(n_iter = 500,
                           burnin = 0,
-                          M = 500,
+                          M = 1000,
                           mass = 0.5,
                           smoothing = smoothing_list,
                           hyperparam = hyper_list)
