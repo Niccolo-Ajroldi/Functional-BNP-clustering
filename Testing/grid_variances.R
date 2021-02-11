@@ -89,10 +89,7 @@ library(coda)
 library(devtools)
 library(mcclust.ext)
 
-phi.var.grid <- c(100,500,1000,2000,5000,7000,
-                  1e4,2e4,4e4,6e4,8e4,
-                  1e5,2e5,4e5,6e5,8e5,
-                  1e6,1e7,1e8)
+phi.var.grid <- c(0.1,0.01,0.001, 1e9)
 jj = 1
 
 for(phi.var in phi.var.grid)
