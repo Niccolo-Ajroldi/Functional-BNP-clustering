@@ -5,9 +5,8 @@ The core of the Gibbs Sampler is implemented in the function `FBNP.R`.
 
 ### Model
 
-Observed functions x1(t),...,xn(t) are assume to be observations of random functions X1(t),...,Xn(t). The probabiliy distribution of such random functions is a mixture of Gaussian Processes, with Dirichlet Process as mixing measure. \
+Observed functions x1(t),...,xn(t) are assume to be realizations of random functions X1(t),...,Xn(t). The probabiliy distribution of such random functions is a mixture of Gaussian Processes, with Dirichlet Process as mixing measure. \
 We are interested in the latent random variables defyining each GP. We will exploit ties between them to cluster observations. \
-For what the mean function is concerned, we assume a decomposition on basis functions b(t).
 We report here the model used for the algorithm, for a more detailed explanation refer to the attached report.
 
 ### Repository structure
