@@ -104,7 +104,7 @@ FBNP_hyper <- function (n_iter,
   # per le iterazioni dopo il burnin
   #K_curr <- sample(1:n)
   K_curr <- sample(1:M, size=n)
-  K_new <- rep(1,n)
+  K_new <- K_curr
   #K_curr <- rep(1,n)
   
   #### RETURN VARIABLES ---------------------------------------------------------------------------
@@ -251,7 +251,7 @@ FBNP_hyper <- function (n_iter,
       
     }
     
-    counter <- sum(K_new %in% K_curr)
+    counter <- sum(unique(K_new) %in% unique(K_curr))
     K_curr <- K_new
     
     # save
