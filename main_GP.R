@@ -99,12 +99,12 @@ hyper_list <- hyperparameters(mean_phi=10,
                               var_phi = 0.01, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
-                              scale = 1)
+                              scale = 100)
 
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 500,
+out <- FBNP_hyper(n_iter = 100,
                           burnin = 0,
                           M = 1000,
                           mass = 0.5,

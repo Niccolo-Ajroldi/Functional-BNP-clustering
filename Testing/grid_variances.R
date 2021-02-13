@@ -89,20 +89,30 @@ library(coda)
 library(devtools)
 library(mcclust.ext)
 
-phi.var.grid <- c(0.00001, 0.00005, 0.0001, 0.0005, 0.005)
+phi.var.grid <- c(0.001, 0.01, 0.1, 1, 10, 100)
 jj = 1
 
-for(phi.var in phi.var.grid)
+mean_phi.grid = c()
+
+for(mean_phi in phi.var.grid)
 {
   print(jj)
   jj = jj+1
   
-  hyper_list <- hyperparameters(var_phi = phi.var, 
+  hyper_list <- hyperparameters(var_phi = 1, 
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
-                                scale = 1)
-
-  out <- FBNP_hyper(n_iter = 500,
+                                scale = 1,
+                                mean_phi=mean_phi)
+  
+  png(file = "InverseGamma.png", width = 8000, height = 5000, units = "px", res = 800)
+  plot(seq(0,50,by=0.01), dinvgamma(seq(0,50,by=0.01),
+                                    shape=hyper_list$c,
+                                    rate=hyper_list$d)
+       )
+  dev.off()
+       
+  out <- FBNP_hyper(n_iter = 300,
                     burnin = 0,
                     M = 500,
                     mass = 0.5,
@@ -118,7 +128,7 @@ for(phi.var in phi.var.grid)
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/TEST_10_2/FBNP_n_time_100/var_phi_",phi.var)
+  new.dir <- paste0(dir.current,"/Results/TEST_12_2/FBNP_grid_mean_phi/var_phi_",phi.var)
   
   # create such directory and go there
   dir.create(new.dir)
@@ -147,7 +157,7 @@ for(phi.var in phi.var.grid)
   par(mfrow=n2mfrow(n/2))
   par(oma=c(0,0,2,0))
   for(i in 1:nhalf)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    traceplot(as.mcmc(K[-c(1:20),i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables "), outer = TRUE)
   dev.off()
@@ -157,17 +167,17 @@ for(phi.var in phi.var.grid)
   par(mfrow=n2mfrow(n-nhalf))
   par(oma=c(0,0,2,0))
   for(i in (nhalf+1):n)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    traceplot(as.mcmc(K[-c(1:20),i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables "), outer = TRUE)
   dev.off()
   
-  for(i in 1:n)
-  {
-    png(file = paste0("Obs_",i,".png"), width = 8000, height = 5000, units = "px", res = 800)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
-    dev.off()
-  }
+  #for(i in 1:n)
+  #{
+  #  png(file = paste0("Obs_",i,".png"), width = 8000, height = 5000, units = "px", res = 800)
+  #  traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+  #  dev.off()
+  #}
   
   # PSM
   K <- out$K
@@ -183,6 +193,13 @@ for(phi.var in phi.var.grid)
   png(file = paste0("Partition.png"), width = 8000, height = 5000, units = "px", res = 800)
   matplot(t(X), type="l", col=best.partition)
   dev.off()
+  
+  # loglikelihood+counter
+  png(file = paste0("LogL_counter.png"), width = 8000, height = 5000, units = "px", res = 800)
+  par(mfrow=c(2,1))
+  traceplot(as.mcmc(logL), main="Traceplot for the logLikelihood")
+  traceplot(as.mcmc(counter), main="Traceplot of counter")
+  text(350,15, labels=paste0('Overall proposed clusters: ',sum(counter)))
   
   
   
