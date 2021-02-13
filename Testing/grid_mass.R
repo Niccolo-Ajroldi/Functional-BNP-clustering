@@ -91,10 +91,10 @@ library(coda)
 library(devtools)
 library(mcclust.ext)
 
-mean.phi.grid <- c(1,5,10,15,20,50,70)
+mass.grid <- c(0.5,1,5,10,50)
 jj = 1
 
-for(mean_phi in mean.phi.grid)
+for(mass in mass.grid)
 {
   print(jj)
   jj = jj+1
@@ -103,12 +103,12 @@ for(mean_phi in mean.phi.grid)
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
                                 scale = 1,
-                                mean_phi = mean_phi)
+                                mean_phi = 10)
   
   out <- FBNP_hyper(n_iter = 200,
                     burnin = 0,
                     M = 500,
-                    mass = 0.5,
+                    mass = mass,
                     smoothing = smoothing_list,
                     hyperparam = hyper_list)
   
@@ -121,7 +121,7 @@ for(mean_phi in mean.phi.grid)
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/TEST_13_2/FBNP/var_1_mean_phi_",mean_phi)
+  new.dir <- paste0(dir.current,"/Results/TEST_13_2/FBNP/mean_10_var_1_mass_",mass)
   
   # create such directory and go there
   dir.create(new.dir)
@@ -146,7 +146,7 @@ for(mean_phi in mean.phi.grid)
   png(file = "InverseGamma.png", width = 8000, height = 5000, units = "px", res = 800)
   plot(seq(0,50,by=0.01), dinvgamma(seq(0,50,by=0.01),
                                     shape=hyper_list$c,
-                                    rate=hyper_list$d)
+                                    rate=hyper_list$d), type='l'
   )
   dev.off()
   

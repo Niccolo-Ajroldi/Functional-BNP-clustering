@@ -3,7 +3,7 @@
 n <- dim(X)[1]
   
 # total mass parameter
-mass <- 0.5
+mass <- 0.6
 
 # expected number of clusters
 sum(mass/(mass+0:(n-1)))

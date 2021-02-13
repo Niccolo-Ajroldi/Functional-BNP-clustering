@@ -1,5 +1,9 @@
 library(invgamma)
 
+plot(seq(0,50,by=0.01), dinvgamma(seq(0,50,by=0.01),
+                                  shape=1,
+                                  rate=1),type='l')
+
 var_phi.grid <- c(0.0001, 0.001, 0.01, 1,
                  10, 100, 1000, 10000)
 for(var_phi in 1){
