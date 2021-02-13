@@ -282,8 +282,8 @@ FBNP_hyper <- function (n_iter,
                        'M' = M,
                        'mass' = mass)
   
-  out <- list(K, overall_logL, COUNTER, cluster_list, probs_j_out, probs_ij_out, algo_parameters)
-  names(out) <- c("K", "logL", "counter","visited_clusters", "probs_j_out", "probs_ij_out", "algorithm_parameters")
+  out <- list(K, overall_logL, COUNTER, probs_j_out, probs_ij_out, algo_parameters)
+  names(out) <- c("K", "logL", "counter", "probs_j_out", "probs_ij_out", "algorithm_parameters")
   
   return(out)
   
