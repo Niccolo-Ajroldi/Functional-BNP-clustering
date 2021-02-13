@@ -49,7 +49,7 @@ dim(X_1)
 X <- X_1
 
 smoothing_list <- smoothing(X = X, 
-                            step = 15, 
+                            step = 9, 
                             nbasis = 25, 
                             spline_order = 4)
 
@@ -65,7 +65,7 @@ library(coda)
 library(devtools)
 library(mcclust.ext)
 
-mean.phi.grid <- c(0.01,0.1,1,3,6,9,10,20,100,500)
+mean.phi.grid <- c(0.1,1,5,10,15,20,100,500)
 jj = 1
 
 for(mean_phi in mean.phi.grid)
@@ -73,16 +73,16 @@ for(mean_phi in mean.phi.grid)
   print(jj)
   jj = jj+1
   
-  hyper_list <- hyperparameters(var_phi = 0.1, 
+  hyper_list <- hyperparameters(var_phi = 0.5, 
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
                                 scale = 1,
                                 mean_phi = mean_phi)
   
-  out <- FBNP_hyper(n_iter = 200,
+  out <- FBNP_hyper(n_iter = 500,
                     burnin = 0,
                     M = 500,
-                    mass = 0.5,
+                    mass = 10,
                     smoothing = smoothing_list,
                     hyperparam = hyper_list)
   
@@ -95,7 +95,7 @@ for(mean_phi in mean.phi.grid)
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/13Feb/FBNP/var_1e-1_mean_phi_",mean_phi)
+  new.dir <- paste0(dir.current,"/Results/13Feb/FBNP/mass10_var_0.5_mean_phi_",mean_phi)
   
   # create such directory and go there
   dir.create(new.dir)

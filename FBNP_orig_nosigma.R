@@ -92,6 +92,7 @@ FBNP_orig_nosigma <- function (n_iter, burnin=0, thin=1, M, mass,
   # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
   # per le iterazioni dopo il burnin
   K_curr <- sample(1:M, size=n)
+  K_new <- K_curr
   #K_curr <- rep(1,n)
   
   #### RETURN VARIABLES ---------------------------------------------------------------------------
@@ -199,13 +200,15 @@ FBNP_orig_nosigma <- function (n_iter, burnin=0, thin=1, M, mass,
       p_i <- exp(p_i)
       
       # update the cluster assignment at current iteration
-      clust <- K_curr[i] <- sample(1:M, size=1, prob=p_i)
+      # clust <- K_curr[i] <- sample(1:M, size=1, prob=p_i)
+      # 
+      # if(length(which(cluster_list==clust))==0)
+      # {
+      #   cluster_list <- append(cluster_list, clust)
+      #   counter <- counter + 1
+      # }
       
-      if(length(which(cluster_list==clust))==0)
-      {
-        cluster_list <- append(cluster_list, clust)
-        counter <- counter + 1
-      }
+      K_new[i] <- clust <- sample(1:M, size=1, prob=p_i)
       
       # update the overall log-likelihood for diagnostic
       logL <- logL + sum( (-0.5)*log(2*pi*phi[clust,]) - ((X[i,]-mu[clust,])^2)/(2*phi[clust,]) )
@@ -214,11 +217,14 @@ FBNP_orig_nosigma <- function (n_iter, burnin=0, thin=1, M, mass,
       if(iter > burnin)
       {
         probs_ij[i,] <- p_i
-        K[iter-burnin,i] <- K_curr[i]
+        K[iter-burnin,i] <- K_new[i]
       }
      
     }
 
+    counter <- sum(unique(K_new) %in% unique(K_curr))
+    K_curr <- K_new
+    
     # save
     if(iter > burnin)
     {
