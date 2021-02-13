@@ -1,14 +1,31 @@
 
-# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
-# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
-
-cat("\014")
 
 library(coda)
 library(devtools)
 library(mcclust.ext)
+
+
+# traceplot of cluster allocation variables
+source("traceplot_K.R")
+traceplot_K(out, smoothing_list, run_parameters)  
+
+source("PSM.R")
+K <- out$K
+psm <- PSM(K)
+{x11(); heatmap(psm, Rowv = NA, Colv = NA)}
+{x11(); plotpsm(psm)}
+
+# estimate best partition
+part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)
+summary(part_BIN)
+best.partition <- part_BIN$cl["best",]
+x11()
+matplot(t(X), type="l", col=best.partition)
+
+
+
+
+
 
 #### DATA #####----------------------------------------------------------------------------
 
@@ -25,12 +42,10 @@ load("GOSE.RData")
 eliminated <- run_parameters$smoothing_parameters$observation_eliminated
 
 # remove deleted observations from gose
-GOSE.rm <- GOSE[-eliminate]
+GOSE.rm <- GOSE[-eliminated]
 
 # output of the algorithm
 K            <- out$K
-mu_coef_out  <- out$mu_coef_out
-sigma2_out   <- out$sigma2_out
 probs_j_out  <- out$probs_j_out
 probs_ij_out <- out$probs_ij_out
 
@@ -40,19 +55,8 @@ probs_ij_out <- out$probs_ij_out
 source("PSM.R")
 psm <- PSM(K)
 
-x11()
-heatmap(psm, Rowv = NA, Colv = NA)
-
-x11()
-plotpsm(psm)
-
-# Number of clusters
-unique_clusters <- apply(K, 1, function(x) length(unique(x)))
-coda_import <- as.mcmc(unique_clusters)
-summary(coda_import)
-geweke.diag(coda_import)
-acfplot(coda_import)
-
+{x11(); heatmap(psm, Rowv = NA, Colv = NA)}
+{x11(); plotpsm(psm)}
 
 #### Partition BINDER - using mcclust.ext ####--------------------------------------------
 
@@ -67,14 +71,14 @@ for(ii in 1:5)
 
 
 # choose a single partition, in this case "avg"
-partition.BIN <- minbinder.ext(psm,cls.draw = K, method="avg")[[1]]
+best.partition <- part_BIN$cl["best",]
 
 # CREDIBLE BALL
 # The credible ball summarizes the uncertainty in the posterior around a
 # clustering estimate part_VI and is defined as the smallest
 # ball around part_VI with posterior probability at least 1-alpha
 
-credibleball.BIN <- credibleball(partition.BIN, K, c.dist = "BIN", alpha = 0.05)
+credibleball.BIN <- credibleball(best.partition, K, c.dist = "BIN", alpha = 0.05)
 summary(credibleball.BIN)
 
 
@@ -93,17 +97,15 @@ summary(credibleball.VI)
 #### PLOT of Best partition ####------------------------------------------------------------
 
 # partition to plot
-partition <- partition.BIN
-length(unique(partition))
-
+length(unique(best.partition))
 x11()
-matplot(t(X), col=partition, type='l')
+matplot(t(X), col=best.partition, type='l')
 
 # partition by clusters
 x11()
 par(mfrow = c(3,3))
 count <- 1
-for(j in levels(as.factor(partition)))
+for(j in levels(as.factor(best.partition)))
 {
   indexes.j <- which(partition==j)
   if(length(indexes.j)==1)

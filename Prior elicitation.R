@@ -4,11 +4,11 @@
 #  X_obs: matrix (X_obs)_ij = X_i(j)
 #  beta: matrix (beta)_ij projection coefficients of datum i on the basis j
 
-hyperparameters <- function(var_phi, X_obs, beta, scale=1){
+hyperparameters <- function(mean_phi,var_phi, X_obs, beta, scale=1){
   
   #### phi_t : c,d ####
   ## phi_t ~ IG(c,d) forall t
-  mean_phi <- 10
+  #mean_phi <- 100
   #mean_phi <- mean(apply(X_obs,MARGIN=2,FUN=var)) * scale
   
   c <- mean_phi^2/var_phi + 2

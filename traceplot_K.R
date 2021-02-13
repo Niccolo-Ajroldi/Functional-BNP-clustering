@@ -8,6 +8,8 @@ traceplot_K <- function (out,
   
   # extract content of out
   K         <- out$K
+  logL      <- out$logL
+  counter   <- out$counter
   n         <- dim(smoothing_list$X)[1]
   basis     <- smoothing_list$basis
   time.grid <- smoothing_list$time.grid
@@ -38,6 +40,11 @@ traceplot_K <- function (out,
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables ", plot.title), outer = TRUE)
   
+  x11()
+  par(mfrow=c(2,1))
+  traceplot(as.mcmc(logL), main="Traceplot for the logLikelihood")
+  traceplot(as.mcmc(counter), main="Traceplot of counter")
+  text(350,15, labels=paste0('Overall proposed clusters: ',sum(counter)))
   
 }
 

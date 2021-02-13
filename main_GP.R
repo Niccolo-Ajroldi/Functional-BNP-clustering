@@ -1,7 +1,7 @@
 
-# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+# setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -18,6 +18,7 @@ source("FBNP_hyper.R")
 source("Prior Elicitation.R")
 source('Smoothing.R')
 source("new_Prior_elicitation.R")
+source("FBNP_orig_nosigma.R")
 
 #### DATA ####-------------------------------------------------------------------------------
 
@@ -25,7 +26,8 @@ source("new_Prior_elicitation.R")
 
 n.1 <- 10
 n.2 <- 10
-n <- n.1+n.2
+n.3 <- 10
+n <- n.1+n.2+n.3
 n_time <- 100
 time.grid <- seq(0, 10, length.out = n_time)
 
@@ -37,7 +39,7 @@ time.grid <- seq(0, 10, length.out = n_time)
 alpha <- 0.05
 beta  <- 0.5
 psi.1 <- exp_cov_function(time.grid, alpha, beta)
-psi.2 <- psi.1
+psi.3 <- psi.2 <- psi.1
 image(psi.1,
       main = 'Exponential covariance function',
       xlab = 'time.grid', ylab = 'time.grid')
@@ -45,16 +47,21 @@ image(psi.1,
 # mean function
 mu.1 <- sin(0.2*pi*time.grid)
 mu.2 <- sin(0.35*pi*(time.grid-4))
+mu.3 <- sin(0.25*pi*(time.grid-2))
 plot(time.grid, mu.1, ylab = "y(t)", type='l', col=1)
 lines(time.grid, mu.2, ylab = "y(t)", type='l', col=2)
+lines(time.grid, mu.3, ylab = "y(t)", type='l', col=3)
 
 # simulate data
 set.seed(1)
 data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
 data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
+data.3 <- generate_gauss_fdata(n.3,mu.3,Cov=psi.1)
 
-X <- rbind(data.1, data.2)
+X <- rbind(data.1,data.2)
 col <- c(rep(1,n.1), rep(2,n.2))
+#X <- rbind(data.1, data.2, data.3)
+#col <- c(rep(1,n.1), rep(2,n.2), rep(3,n.3))
 matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
 
 # rescale data
@@ -88,7 +95,8 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 0.1, 
+hyper_list <- hyperparameters(mean_phi=10,
+                              var_phi = 0.01, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
@@ -96,9 +104,9 @@ hyper_list <- hyperparameters(var_phi = 0.1,
 
 #### CALL ####--------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 300,
+out <- FBNP_hyper(n_iter = 500,
                           burnin = 0,
-                          M = 500,
+                          M = 1000,
                           mass = 0.5,
                           smoothing = smoothing_list,
                           hyperparam = hyper_list)
@@ -113,7 +121,8 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL
 
-#save(out, file="Results/nico_11_2") 
+#save(out, file="Results/nico_11_2")
+save(out, file="Results/tere_orig_nosigma_m100v1e3")
 
 #### DIAGNOSTIC ####-------------------------------------------------------------------------
 
@@ -137,6 +146,7 @@ psm <- PSM(K)
 
 # estimate best partition
 part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)
+summary(part_BIN)
 best.partition <- part_BIN$cl["best",]
 x11()
 matplot(t(X), type="l", col=best.partition)
