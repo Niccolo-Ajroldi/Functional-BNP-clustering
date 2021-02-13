@@ -194,6 +194,13 @@ for(mean_phi in phi.var.grid)
   matplot(t(X), type="l", col=best.partition)
   dev.off()
   
+  # loglikelihood+counter
+  png(file = paste0("LogL_counter.png"), width = 8000, height = 5000, units = "px", res = 800)
+  par(mfrow=c(2,1))
+  traceplot(as.mcmc(logL), main="Traceplot for the logLikelihood")
+  traceplot(as.mcmc(counter), main="Traceplot of counter")
+  text(350,15, labels=paste0('Overall proposed clusters: ',sum(counter)))
+  
   
   
   # print information on a txt file -----------------------------------------------------
