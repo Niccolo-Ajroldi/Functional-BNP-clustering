@@ -224,30 +224,21 @@ FBNP_hyper <- function (n_iter,
       p_i <- exp(p_i)#/sum(exp(p_i))
       
       # update the cluster assignment at current iteration
-      #clust <- K_curr[i] <- sample(1:M, size=1, prob=p_i)
-      
-      K_new[i] <- clust <- sample(1:M, size=1, prob=p_i)
-      # if(length(which(K_curr==clust))==0)
-      # {
-      #   #cluster_list <- append(cluster_list, clust)
-      #   counter <- counter + 1
-      # }
-      
-      # K_curr[i] <- clust
-      # update the overall log-likelihood for diagnostic
-      logL <- logL + sum( (-0.5)*log(2*pi*phi[clust,]) - ((X[i,]-mu[clust,])^2)/(2*phi[clust,]) )
+      K_new[i] <- sample(1:M, size=1, prob=p_i)
+
+      # update the log-likelihood
+      logL <- logL + sum( (-0.5)*log(2*pi*phi[K_new[i],]) - ((X[i,]-mu[K_new[i],])^2)/(2*phi[K_new[i],]) )
       
       # save
       if(iter > burnin)
       {
         probs_ij[i,] <- p_i
-        #K[iter-burnin,i] <- K_curr[i]
         K[iter-burnin,i] <- K_new[i]
       }
       
     }
     
-    counter <- sum(unique(K_new) %in% unique(K_curr))
+    counter <- length(unique(K_new)) - sum(unique(K_new) %in% unique(K_curr))
     K_curr <- K_new
     
     # save
@@ -291,8 +282,8 @@ FBNP_hyper <- function (n_iter,
                        'M' = M,
                        'mass' = mass)
   
-  out <- list(K, overall_logL, COUNTER, cluster_list, probs_j_out, probs_ij_out, algo_parameters)
-  names(out) <- c("K", "logL", "counter","visited_clusters", "probs_j_out", "probs_ij_out", "algorithm_parameters")
+  out <- list(K, overall_logL, COUNTER, probs_j_out, probs_ij_out, algo_parameters)
+  names(out) <- c("K", "logL", "counter", "probs_j_out", "probs_ij_out", "algorithm_parameters")
   
   return(out)
   
