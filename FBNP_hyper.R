@@ -2,7 +2,6 @@
 library(invgamma)
 library(fda)
 library(MASS)
-library(tictoc)
 library(pbmcapply)
 
 #' 
@@ -129,9 +128,7 @@ FBNP_hyper <- function (n_iter,
   #### ALGORITHM ----------------------------------------------------------------------------------
   
   pb <- progressBar(0, max = n_iter, initial = 0, style = "ETA")
-  tic(quiet=TRUE)
-  
-  
+
   for(iter in 1:n_iter)
   {
     
@@ -287,10 +284,6 @@ FBNP_hyper <- function (n_iter,
     setTxtProgressBar(pb, iter)
     
   }
-  
-  elapsed <- toc(quiet=TRUE)
-  print(paste0("Elapsed: ", round((elapsed$toc - elapsed$tic)/60), 
-               " min, ", round((elapsed$toc - elapsed$tic)%%60), " sec."))
   
   #### RETURN -------------------------------------------------------------------------------------
 

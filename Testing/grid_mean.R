@@ -91,36 +91,37 @@ library(coda)
 library(devtools)
 library(mcclust.ext)
 
-phi.var.grid <- c(0.001, 0.01, 0.1, 1, 10)
+mean.phi.grid <- c(1,5,10,15,20,50,70)
 jj = 1
 
-for(phi.var in phi.var.grid)
+for(mean_phi in mean.phi.grid)
 {
   print(jj)
   jj = jj+1
   
-  hyper_list <- hyperparameters(var_phi = phi.var, 
+  hyper_list <- hyperparameters(var_phi = 1, 
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
-                                scale = 1)
-       
+                                scale = 1,
+                                mean_phi = 10)
+  
   out <- FBNP_hyper(n_iter = 200,
                     burnin = 0,
                     M = 500,
                     mass = 0.5,
                     smoothing = smoothing_list,
                     hyperparam = hyper_list)
-
+  
   run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
                          'prior_parameters'     = hyper_list,
                          'smoothing_parameters' = smoothing_list$smoothing_parameters)
-
+  
   
   # save old directory to get back there at the end
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/TEST_13_2/FBNP/var_phi_",phi.var)
+  new.dir <- paste0(dir.current,"/Results/TEST_13_2/FBNP/var_1_mean_phi_",mean_phi)
   
   # create such directory and go there
   dir.create(new.dir)
