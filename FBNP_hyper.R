@@ -104,6 +104,7 @@ FBNP_hyper <- function (n_iter,
   # per le iterazioni dopo il burnin
   #K_curr <- sample(1:n)
   K_curr <- sample(1:M, size=n)
+  K_new <- rep(1,n)
   #K_curr <- rep(1,n)
   
   #### RETURN VARIABLES ---------------------------------------------------------------------------
@@ -220,21 +221,23 @@ FBNP_hyper <- function (n_iter,
       # iterate over kernels
       for(j in 1:M)
       {
-        p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*phi[j,]) ) # sum over times
+        p_i[j] <- log(p[j]) + sum((-0.5)*log(2*pi*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*phi[j,]) ) # sum over times
       }
       #p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
       #p_i <- p_i - min(p_i)
       p_i <- exp(p_i)#/sum(exp(p_i))
       
       # update the cluster assignment at current iteration
-      clust <- K_curr[i] <- sample(1:M, size=1, prob=p_i)
+      #clust <- K_curr[i] <- sample(1:M, size=1, prob=p_i)
       
-      if(length(which(cluster_list==clust))==0)
-      {
-        cluster_list <- append(cluster_list, clust)
-        counter <- counter + 1
-      }
+      K_new[i] <- clust <- sample(1:M, size=1, prob=p_i)
+      # if(length(which(K_curr==clust))==0)
+      # {
+      #   #cluster_list <- append(cluster_list, clust)
+      #   counter <- counter + 1
+      # }
       
+      # K_curr[i] <- clust
       # update the overall log-likelihood for diagnostic
       logL <- logL + sum( (-0.5)*log(2*pi*phi[clust,]) - ((X[i,]-mu[clust,])^2)/(2*phi[clust,]) )
       
@@ -242,10 +245,14 @@ FBNP_hyper <- function (n_iter,
       if(iter > burnin)
       {
         probs_ij[i,] <- p_i
-        K[iter-burnin,i] <- K_curr[i]
+        #K[iter-burnin,i] <- K_curr[i]
+        K[iter-burnin,i] <- K_new[i]
       }
       
     }
+    
+    counter <- sum(K_new %in% K_curr)
+    K_curr <- K_new
     
     # save
     if(iter > burnin)
