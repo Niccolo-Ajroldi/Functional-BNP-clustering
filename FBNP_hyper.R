@@ -122,7 +122,6 @@ FBNP_hyper <- function (n_iter,
   
   # a vector containing the number of new clusters (i.e. not seen in any iteration before)
   # proposed at each iteration
-  cluster_list <- K_curr
   COUNTER <-  numeric(n_iter-burnin)
   
   #### ALGORITHM ----------------------------------------------------------------------------------
