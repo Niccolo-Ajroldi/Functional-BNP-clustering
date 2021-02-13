@@ -249,10 +249,10 @@ FBNP_hyper <- function (n_iter,
         K[iter-burnin,i] <- K_new[i]
       }
       
-      counter <- sum(K_new %in% K_curr)
-      K_curr <- K_new
-      
     }
+    
+    counter <- sum(K_new %in% K_curr)
+    K_curr <- K_new
     
     # save
     if(iter > burnin)
