@@ -47,7 +47,7 @@ dim(X_1)
 X <- X_1
 
 smoothing_list <- smoothing(X = X, 
-                            step = 15, 
+                            step = 30, 
                             nbasis = 25, 
                             spline_order = 4)
 
@@ -59,8 +59,8 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(mean_phi = 100,
-                              var_phi = 10, 
+hyper_list <- hyperparameters(mean_phi = 0.1,
+                              var_phi = 0.01, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
@@ -69,7 +69,7 @@ hyper_list <- hyperparameters(mean_phi = 100,
 
 out <- FBNP_hyper(n_iter = 500,
                   burnin = 0,
-                  M = 1e4,
+                  M = 500,
                   mass = 0.5,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
