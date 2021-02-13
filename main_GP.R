@@ -86,7 +86,7 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 5, 
+hyper_list <- hyperparameters(var_phi = 0.01, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1,
@@ -95,7 +95,7 @@ hyper_list <- hyperparameters(var_phi = 5,
 
 #### CALL ####-------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 1000,
+out <- FBNP_orig_nosigma(n_iter = 1000,
                           burnin = 500,
                           M = 700,
                           mass = 0.6,

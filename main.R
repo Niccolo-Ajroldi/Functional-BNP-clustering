@@ -47,14 +47,12 @@ dim(X_1)
 X <- X_1
 
 smoothing_list <- smoothing(X = X, 
-                            step = 30, 
+                            step = 9, 
                             nbasis = 25, 
                             spline_order = 4)
 
 smoothing_list[['smoothing_parameters']][['rescale_parameter']] <- rescale
 smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminate
-
-
 
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
@@ -67,10 +65,10 @@ hyper_list <- hyperparameters(mean_phi = 0.01,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 500,
+out <- FBNP(n_iter = 1000,
                   burnin = 0,
                   M = 500,
-                  mass = 0.5,
+                  mass = 5,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
 
