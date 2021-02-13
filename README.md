@@ -1,6 +1,6 @@
 # Functional-BNP-clustering
 
-In this repository we implement a Dirichlet Process Mixture model to perform Bayesian Nonparametric clustering  of Functional Data. A detailed mathematical explanation of the model is addressed in the dedicated [report](). \
+In this repository we implement a Dirichlet Process Mixture model to perform Bayesian Nonparametric clustering of Functional Data. A detailed mathematical explanation of the model is addressed in the dedicated [report](). \
 The core of the Gibbs Sampler is implemented in the function `FBNP.R`.
 
 ### Model
