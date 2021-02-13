@@ -26,7 +26,8 @@ source("new_Prior_elicitation.R")
 
 n.1 <- 10
 n.2 <- 10
-n <- n.1+n.2
+n.3 <- 10
+n <- n.1+n.2+n.3
 n_time <- 100
 time.grid <- seq(0, 10, length.out = n_time)
 
@@ -35,22 +36,23 @@ time.grid <- seq(0, 10, length.out = n_time)
 # tune correlation of simulated data:
 # increase alpha to increase variability in each point
 # increase beta to decrease covariance between times (high beta -> more rough function)
-alpha <- 0.05
-beta  <- 0.5
+alpha <- 0.01
+beta  <- 0.25
 psi.1 <- exp_cov_function(time.grid, alpha, beta)
-psi.2 <- psi.1
 
 # mean function
 mu.1 <- sin(0.2*pi*time.grid)
 mu.2 <- sin(0.35*pi*(time.grid-4))
+mu.3 <- sin(0.2*pi*(time.grid+2))
 
 # simulate data
 set.seed(1)
 data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
 data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
+data.3 <- generate_gauss_fdata(n.3,mu.3,Cov=psi.1)
 
-X <- rbind(data.1, data.2)
-col <- c(rep(1,n.1), rep(2,n.2))
+X <- rbind(data.1, data.2, data.3)
+col <- c(rep(1,n.1), rep(2,n.2), rep(3,n.3))
 matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
 
 # rescale data
@@ -100,8 +102,7 @@ for(phi.var in phi.var.grid)
   hyper_list <- hyperparameters(var_phi = phi.var, 
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
-                                scale = 1,
-                                mean_phi=mean_phi)
+                                scale = 1)
   
   png(file = "InverseGamma.png", width = 8000, height = 5000, units = "px", res = 800)
   plot(seq(0,50,by=0.01), dinvgamma(seq(0,50,by=0.01),
@@ -126,7 +127,7 @@ for(phi.var in phi.var.grid)
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/TEST_13_2/FBNP_grid_mean_phi/var_phi_",phi.var)
+  new.dir <- paste0(dir.current,"/Results/TEST_13_2/FBNP/var_phi_",phi.var)
   
   # create such directory and go there
   dir.create(new.dir)
@@ -193,11 +194,14 @@ for(phi.var in phi.var.grid)
   dev.off()
   
   # loglikelihood+counter
+  logL      <- out$logL
+  counter   <- out$counter
   png(file = paste0("LogL_counter.png"), width = 8000, height = 5000, units = "px", res = 800)
   par(mfrow=c(2,1))
   traceplot(as.mcmc(logL), main="Traceplot for the logLikelihood")
   traceplot(as.mcmc(counter), main="Traceplot of counter")
   text(350,15, labels=paste0('Overall proposed clusters: ',sum(counter)))
+  dev.off()
   
   
   
