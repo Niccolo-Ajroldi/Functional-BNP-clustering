@@ -129,7 +129,7 @@ save(out, file="Results/tere_orig_nosigma_m100v1e3")
 library(coda)
 library(devtools)
 library(mcclust.ext)
-
+load("Results/tere_orig_nosigma_3gr_v1e-1")
 # traceplot of cluster allocation variables
 source("traceplot_K.R")
 traceplot_K(out, smoothing_list, run_parameters)  
