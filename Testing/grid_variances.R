@@ -196,8 +196,8 @@ for(phi.var in phi.var.grid)
   dev.off()
   
   # loglikelihood+counter
-  logL      <- out$logL
-  counter   <- out$counter
+  logL    <- out$logL
+  counter <- out$counter
   png(file = paste0("LogL_counter.png"), width = 8000, height = 5000, units = "px", res = 800)
   par(mfrow=c(2,1))
   traceplot(as.mcmc(logL), main="Traceplot for the logLikelihood")
