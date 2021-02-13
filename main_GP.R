@@ -14,6 +14,7 @@ library(coda)
 
 source("FBNP.R")
 source("FBNP_hyper_alltime.R")
+source("FBNP_orig_nosigma.R")
 source("new_FBNP.R")
 source("FBNP_hyper.R")
 source("Prior Elicitation.R")
@@ -86,7 +87,7 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 0.01, 
+hyper_list <- hyperparameters(var_phi = 2, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1,
@@ -95,9 +96,9 @@ hyper_list <- hyperparameters(var_phi = 0.01,
 
 #### CALL ####-------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 1000,
+out <- FBNP_orig_nosigma(n_iter = 1000,
                           burnin = 500,
-                          M = 700,
+                          M = 500,
                           mass = 0.6,
                           smoothing = smoothing_list,
                           hyperparam = hyper_list)
@@ -112,7 +113,8 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL
 
-savez(out, "GP_DEF_2")
+source("savez.R")
+savez(out, "GP_DEF_5")
 
 #save(out, file="Results/nico_11_2")
 #save(out, file="Results/tere_orig_nosigma_m100v1e3")

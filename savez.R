@@ -108,9 +108,10 @@ savez <- function(out, name_dir)
     "step:       ", run_parameters$smoothing_parameters$step, "\n",
     "L:          ", run_parameters$smoothing_parameters$number_basis, "\n",
     "rescale:    ", run_parameters$smoothing_parameters$rescale_parameter, "\n",
-    "eliminated: ", run_parameters$smoothing_parameters$observation_eliminated,
+    "eliminated: ", run_parameters$smoothing_parameters$observation_eliminated, "\n",
     
-    "var phi:    ", hyper_list$desired_prior_values,
+    "var phi: ", hyper_list$desired_prior_values, "\n",
+    "mean_phi:", hyper_list$mean_phi,
     
     file="Output.txt", sep=""
   )

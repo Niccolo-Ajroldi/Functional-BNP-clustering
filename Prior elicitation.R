@@ -27,5 +27,6 @@ hyperparameters <- function(var_phi, X_obs, beta, scale=1, mean_phi=10){
                'd' = d,
                'm0' = m0,
                'Lambda0' = Lambda0,
-               'desired_prior_values' = desired_prior_values))
+               'desired_prior_values' = desired_prior_values,
+               'mean_phi' = mean_phi))
 }
