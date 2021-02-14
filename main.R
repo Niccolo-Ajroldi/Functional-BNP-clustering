@@ -1,6 +1,6 @@
 
-setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
 # setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
@@ -57,18 +57,19 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(mean_phi = 0.01,
-                              var_phi = 10, 
+hyper_list <- hyperparameters(mean_phi = 10,
+                              var_phi = 0.01, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
 
+plot(seq(0,700,by=0.01),invgamma::dinvgamma(seq(0,700,by=0.01), shape =hyper_list$c, rate = hyper_list$d ))
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 1000,
-                  burnin = 0,
-                  M = 500,
-                  mass = 5,
+out <- FBNP_hyper(n_iter = 10000,
+                  burnin = 5000,
+                  M = 1000,
+                  mass = 0.5,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
 
