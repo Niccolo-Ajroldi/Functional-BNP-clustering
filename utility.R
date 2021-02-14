@@ -1,12 +1,21 @@
 # utility
 
+library(invgamma)
+
 m <- 100
 v <- 10
 a <- m^2/v + 2
 b <- m^3/v + m
-y <- rinvgamma(100000, a, b)
+
+a <- c(0.01,0.05,0.1,0.5,1,5,10)
+b <- 0.1
 x11()
-plot(density(y), col="lightblue", lwd=3)
+par(mfrow=c(3,3))
+for(i in 1:length(a))
+{
+  y <- rgamma(100000, a[i], b)
+  plot(density(y), col="lightblue", lwd=3, main=paste0("Shape parameter: ",a[i]))
+}
 abline(v=m, lwd=1, col="red")
 
 

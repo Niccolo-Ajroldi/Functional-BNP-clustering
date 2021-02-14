@@ -44,7 +44,6 @@ traceplot_K <- function (out,
   par(mfrow=c(2,1))
   traceplot(as.mcmc(logL), main="Traceplot for the logLikelihood")
   traceplot(as.mcmc(counter), main="Traceplot of counter")
-  text(350,15, labels=paste0('Overall proposed clusters: ',sum(counter)))
   
 }
 
