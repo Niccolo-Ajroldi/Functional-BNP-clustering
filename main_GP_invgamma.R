@@ -32,24 +32,23 @@ n <- n.1+n.2+n.3
 n_time <- 100
 time.grid <- seq(0, 10, length.out = n_time)
 
-# Exponential covariance function over a time.grid
-
-# tune correlation of simulated data:
-# increase alpha to increase variability in each point
-# increase beta to decrease covariance between times (high beta -> more rough function)
-alpha <- 0.02
-beta  <- 0.25
-psi.1 <- exp_cov_function(time.grid, alpha, beta)
 library(invgamma)
-psi.1 <- diag(nrow=n_time,ncol=n_time) * rinvgamma(n.1, shape=2, rate=2)
+
+mean_phi=7
+var_phi=4
+c <- mean_phi^2/var_phi + 2
+d <- mean_phi^3/var_phi + mean_phi
+psi.1 <- diag(nrow=n_time,ncol=n_time) * rinvgamma(n_time, shape=c, rate=d)
+
 mean(diag(psi.1))
 var(diag(psi.1))
+diag(psi.1)
 #View(psi.1)
 
 # mean function
-mu.1 <- sin(0.2*pi*time.grid)
-mu.2 <- sin(0.35*pi*(time.grid-4))
-mu.3 <- sin(0.2*pi*(time.grid+2))
+mu.1 <- 10*sin(0.2*pi*time.grid)
+mu.2 <- 10*sin(0.35*pi*(time.grid-4))
+mu.3 <- 10*sin(0.2*pi*(time.grid+2))
 
 # simulate data
 set.seed(1)
@@ -61,12 +60,18 @@ X <- rbind(data.1, data.2, data.3)
 col <- c(rep(1,n.1), rep(2,n.2), rep(3,n.3))
 matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
 
+png(file = paste0("SimulatedGP.png"), width = 8000, height = 5000, units = "px", res = 800)
+matplot(time.grid, t(X), type='l', col=col, main="Simulated GP", ylab="y")
+dev.off()
+
+
 # rescale data
-rescale <- 1 # rescale <- max(X)
+rescale <- 1
+#rescale <- max(X)
 X <- X/rescale 
 
 # basis 
-L <- 15
+L <- 20
 basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
 
 # smooth data
@@ -80,6 +85,7 @@ basis.t <- t(eval.basis(time.grid, basis))
 X_smooth <- beta %*% basis.t
 matplot(time.grid, t(X_smooth), type='l', col=col)
 
+
 smoothing_parameters <- list('step' = 1,
                              'number_basis' = L,
                              'spline_order' = 4)
@@ -92,7 +98,7 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 0.01, 
+hyper_list <- hyperparameters(var_phi = 0.001, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1,
@@ -101,12 +107,12 @@ hyper_list <- hyperparameters(var_phi = 0.01,
 
 #### CALL ####-------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 7000,
-                          burnin = 2000,
-                          M = 1000,
-                          mass = 0.6,
-                          smoothing = smoothing_list,
-                          hyperparam = hyper_list)
+out <- FBNP_hyper(n_iter = 1000,
+                  burnin = 500,
+                  M = 1000,
+                  mass = 0.6,
+                  smoothing = smoothing_list,
+                  hyperparam = hyper_list)
 
 
 ### SAVE OUTPUT ####-------------------------------------------------------------------------
@@ -119,7 +125,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 out[['algorithm_parameters']] <- NULL
 
 source("savez.R")
-savez(out, "GP_DEF_5")
+savez(out, "GP_IG_L_20")
 
 #save(out, file="Results/nico_11_2")
 #save(out, file="Results/tere_orig_nosigma_m100v1e3")

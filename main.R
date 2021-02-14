@@ -1,7 +1,7 @@
 
 setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-# setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -41,13 +41,13 @@ X <- X/rescale
 matplot(t(X), type='l')
 
 # cut x-axis
-X_1 <- X[,seq(151,1050)]
-matplot(t(X_1), type='l')
-dim(X_1)
-X <- X_1
+#X_1 <- X[,seq(151,1050)]
+#matplot(t(X_1), type='l')
+#dim(X_1)
+#X <- X_1
 
 smoothing_list <- smoothing(X = X, 
-                            step = 9, 
+                            step = 10, 
                             nbasis = 25, 
                             spline_order = 4)
 
@@ -57,18 +57,18 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(mean_phi = 0.01,
-                              var_phi = 10, 
+hyper_list <- hyperparameters(mean_phi = 0.5,
+                              var_phi = 0.001, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP(n_iter = 1000,
+out <- FBNP_orig_nosigma(n_iter = 200,
                   burnin = 0,
-                  M = 500,
-                  mass = 5,
+                  M = 200,
+                  mass = 0.5,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
 
@@ -83,9 +83,10 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 out[['algorithm_parameters']] <- NULL # ok ma perché allora non salvarli direttamente da qui azichÃ¨ farli restiruire da FBNP e poi rimuoverli?
 
 # save output
-save(out, run_parameters, file = "Results/nohope.RData")
+#save(out, run_parameters, file = "Results/nohope.RData")
 
 #### DIAGNOSTIC ####-------------------------------------------------------------------------
+
 
 library(coda)
 library(devtools)
@@ -107,7 +108,5 @@ summary(part_BIN)
 best.partition <- part_BIN$cl["best",]
 x11()
 matplot(t(X), type="l", col=best.partition)
-
-
-
+source("")
 diagnostic(out, smoothing_list, run_parameters)
