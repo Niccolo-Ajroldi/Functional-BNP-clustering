@@ -1,4 +1,3 @@
-
 setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
 # setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
@@ -10,6 +9,7 @@ cat("\014")
 library(fda)
 library(fdakma)
 library(latex2exp)
+library(roahd)
 source("FBNP.R")
 source("FBNP_hyper.R")
 source("FBNP_hyper_alltime.R")
@@ -20,14 +20,26 @@ source("FBNP_orig_nosigma.R")
 #### DATA #### -------------------------------------------------------------------------------
 
 # load data and rescale
-load("X.RData")
+sani <- mfD_healthy
+malati <- mfD_LBBB
+x11()
+plot(sani)
+x11()
+plot(malati)
 
-matplot(t(X[12:16,]), type='l', lwd=1, lty=1, 
-        main="", xlab="Time [ms]", #ylab="Evoked potential [micro volt]",
-        ylab=TeX('Evoked Potential $\\[\\mu$V$\\]$'),
-        #ylab=TeX('Evoked potential'),
-        #ylab=paste0("Evoked potential [",expression(mu),"V]"),
-        ylim=c(-700,650))
+sani.3 <- sani$fDList[[3]]$values
+malati.3 <- malati$fDList[[3]]$values
+
+X <- rbind(sani.3,malati.3)
+idx <- c(rep(1,50),rep(2,50))
+
+x11()
+matplot(t(X), col=idx, type='l')
+
+X <- X[,-seq(1,304)]
+
+x11()
+matplot(t(X), col=idx, type='l')
 
 # eliminate bad data
 #eliminate <- c(12,13,19,24)
@@ -37,17 +49,12 @@ X <- X[-eliminate,] # matrix n x n_time, HO TOLTO ANCHE LA 24
 # rescale data
 #rescale <- 1 # 
 rescale <- max(X)
-X <- X/rescale 
-matplot(t(X), type='l')
-
-# cut x-axis
-X_1 <- X[,seq(151,1050)]
-matplot(t(X_1), type='l')
-dim(X_1)
-X <- X_1
+X <- X/rescale
+x11()
+matplot(t(X), type='l', col=idx)
 
 smoothing_list <- smoothing(X = X, 
-                            step = 9, 
+                            step = 12, 
                             nbasis = 25, 
                             spline_order = 4)
 
@@ -59,7 +66,7 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(mean_phi = 5,
+hyper_list <- hyperparameters(mean_phi = 10,
                               var_phi = 0.01, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
@@ -67,10 +74,10 @@ hyper_list <- hyperparameters(mean_phi = 5,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 2000,
+out <- FBNP_hyper(n_iter = 500,
                   burnin = 0,
-                  M = 1000,
-                  mass = 5,
+                  M = 500,
+                  mass = 0.25,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
 
@@ -80,7 +87,7 @@ out <- FBNP_hyper(n_iter = 2000,
 run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
                        'prior_parameters'     = hyper_list,
                        'smoothing_parameters' = smoothing_list$smoothing_parameters
-                       )
+)
 
 out[['algorithm_parameters']] <- NULL # ok ma perché allora non salvarli direttamente da qui azichÃ¨ farli restiruire da FBNP e poi rimuoverli?
 
@@ -98,6 +105,9 @@ library(mcclust.ext)
 # traceplot of cluster allocation variables
 source("traceplot_K.R")
 traceplot_K(out, smoothing_list, run_parameters)  
+
+x11()
+traceplot(as.mcmc(out$counter))
 
 source("PSM.R")
 K <- out$K
