@@ -58,7 +58,7 @@ Computation were performed using
 
 For all the R-packages used in the codes please refer to section Reference in the [report](link).
 
-This markdown file is written relying on [DILLINGER](https://dillinger.io/).
+This readme file is written relying on [DILLINGER](https://dillinger.io/).
 
 ## Authors
 
