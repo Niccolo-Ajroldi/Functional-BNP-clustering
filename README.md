@@ -4,7 +4,7 @@
 This is the repository of the code for the project of the course *Bayesian Statistics* held by Professor A. Guglielmi at Politecnico di Milano during the academic year 2020/2021.
 The tutor of the project was R. Corradin, PhD.
 
-We were given 26 multivariate functional observation with 4 components, each of which represents a somatosensory evoked potential, i.e. the electrical modifications occurringin the central nervous system following a stimulus, detected within 2 seconds after the stimulus over 1600 istants.
+We were given 26 multivariate functional observation with 4 components, each of which represents a somatosensory evoked potential, i.e. the electrical modifications occurringin the central nervous system following a stimulus, detected within 2 seconds after the stimulus over 1600 instants.
 
 The aim of the project is **to implement a functional clustering algorithm in a Bayesian nonparametric framework** in a univariate setting. In particular, we assume an infinite mixture model for our functional obervations with a Dirichlet Process as mixture distribution. Our aim is to sample from Dirichlet process in order to get a sample of the latent partition induced. A Gibbs sampler is implemented for our purposes.
 
