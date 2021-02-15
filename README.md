@@ -44,7 +44,7 @@ The file `install.R` provides automatic installation of the required packages.
 ### Simulated data
 We simulate 10 trajectories of 3 different Gaussian Processes with different sinusoidal mean operator and a covariance operator coherent with our model (for further details please refer to [report](link)).
 
-![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Simulated_GP.png)
+![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/GP_ind.png)
 
 After having conveniently tuned the parameters, our algorithm is able to properly cluster the simulated data. We obtain a slight improvement in mixing with the hyperprior structure.
 
