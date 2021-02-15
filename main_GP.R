@@ -37,14 +37,10 @@ time.grid <- seq(0, 10, length.out = n_time)
 # tune correlation of simulated data:
 # increase alpha to increase variability in each point
 # increase beta to decrease covariance between times (high beta -> more rough function)
-alpha <- 0.02
-beta  <- 0.25
+alpha <- 0.07
+beta  <- 0.15
 psi.1 <- exp_cov_function(time.grid, alpha, beta)
-library(invgamma)
-psi.1 <- diag(nrow=n_time,ncol=n_time) * rinvgamma(n.1, shape=2, rate=2)
-mean(diag(psi.1))
-var(diag(psi.1))
-#View(psi.1)
+s#View(psi.1)
 
 # mean function
 mu.1 <- sin(0.2*pi*time.grid)
@@ -52,7 +48,7 @@ mu.2 <- sin(0.35*pi*(time.grid-4))
 mu.3 <- sin(0.2*pi*(time.grid+2))
 
 # simulate data
-set.seed(1)
+set.seed(2)
 data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
 data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
 data.3 <- generate_gauss_fdata(n.3,mu.3,Cov=psi.1)

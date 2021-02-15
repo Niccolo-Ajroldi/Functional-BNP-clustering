@@ -1,7 +1,7 @@
 
-setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+ setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -41,14 +41,14 @@ X <- X/rescale
 matplot(t(X), type='l')
 
 # cut x-axis
-#X_1 <- X[,seq(151,1050)]
-#matplot(t(X_1), type='l')
-#dim(X_1)
-#X <- X_1
+X_1 <- X[,seq(151,1050)]
+matplot(t(X_1), type='l')
+dim(X_1)
+X <- X_1
 
 smoothing_list <- smoothing(X = X, 
-                            step = 10, 
-                            nbasis = 25, 
+                            step = 12, 
+                            nbasis = 20, 
                             spline_order = 4)
 
 smoothing_list[['smoothing_parameters']][['rescale_parameter']] <- rescale
@@ -57,18 +57,23 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(mean_phi = 0.5,
+hyper_list <- hyperparameters(mean_phi = 0.85,
                               var_phi = 0.001, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1)
 
+plot(seq(0,5,by=0.01),invgamma::dinvgamma(seq(0,5,by=0.01), shape =hyper_list$c, rate = hyper_list$d ),'l')
+
+hyper_list$c
+hyper_list$d
+
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP_orig_nosigma(n_iter = 200,
-                  burnin = 0,
-                  M = 200,
-                  mass = 0.5,
+out <- FBNP_hyper(n_iter = 8000,
+                  burnin = 3000,
+                  M = 500,
+                  mass = 60,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
 
@@ -82,11 +87,13 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 
 out[['algorithm_parameters']] <- NULL # ok ma perché allora non salvarli direttamente da qui azichÃ¨ farli restiruire da FBNP e poi rimuoverli?
 
-# save output
-#save(out, run_parameters, file = "Results/nohope.RData")
+source('savez.R')
+savez(out,'TEST_15_2/hope_dati')
 
 #### DIAGNOSTIC ####-------------------------------------------------------------------------
 
+#setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+#load("Results/NicoNight/DAJE_mean_phi_1/Output.RData")
 
 library(coda)
 library(devtools)
@@ -108,5 +115,50 @@ summary(part_BIN)
 best.partition <- part_BIN$cl["best",]
 x11()
 matplot(t(X), type="l", col=best.partition)
-source("")
+
+#save(out, X, file = "Results/Big runs/mass5_meanphi5_varphi0.01_M5000.RData")
+#load("Results/Big runs/mass5_meanphi5_varphi0.01_M5000.RData")
+
 diagnostic(out, smoothing_list, run_parameters)
+
+# Plot of the partitions with the different methods
+x11()
+par(mfrow=c(2,3))
+for(ii in 1:5)
+        matplot(t(X), col=(part_BIN$cl)[ii,], type='l', main=(row.names(part_BIN$cl))[ii])
+
+
+# choose a single partition, in this case "avg"
+partition.BIN <- minbinder.ext(psm,cls.draw = K, method="comp")[[1]]
+x11()
+matplot(t(X), type="l", col=partition.BIN)
+
+
+load("GOSE.RData")
+GOSE.rm <- GOSE
+
+partition <- partition.BIN
+
+# partition by clusters
+x11()
+par(mfrow = c(3,3))
+count <- 1
+for(j in levels(as.factor(partition)))
+{
+        indexes.j <- which(partition==j)
+        if(length(indexes.j)==1)
+                matplot(X[indexes.j,], type='l', col=GOSE.rm[indexes.j], xlab="", main=paste0("Cluster ",count))
+        else
+                matplot(t(X[indexes.j,]), type='l', col=GOSE.rm[indexes.j], xlab="", main=paste0("Cluster ",count))
+        count <- count+1
+}
+
+# partition by GOSE
+x11()
+par(mfrow = c(2,1))
+for(i in 1:2)
+{
+        matplot(t(X[GOSE.rm==i,]), col=partition[GOSE.rm==i], type = 'l', main = paste("GOSE",i), xlab="")
+}
+
+

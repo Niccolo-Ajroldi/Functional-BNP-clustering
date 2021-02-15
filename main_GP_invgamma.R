@@ -60,35 +60,33 @@ X <- rbind(data.1, data.2, data.3)
 col <- c(rep(1,n.1), rep(2,n.2), rep(3,n.3))
 matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
 
-png(file = paste0("SimulatedGP.png"), width = 8000, height = 5000, units = "px", res = 800)
-matplot(time.grid, t(X), type='l', col=col, main="Simulated GP", ylab="y")
-dev.off()
-
+#png(file = paste0("SimulatedGP.png"), width = 8000, height = 5000, units = "px", res = 800)
+#matplot(time.grid, t(X), type='l', col=col, main="Simulated GP", ylab="y")
+#dev.off()
 
 # rescale data
-rescale <- 1
+rescale <- max(X)
 #rescale <- max(X)
 X <- X/rescale 
 
-# basis 
-L <- 20
-basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
+# number of data
+n <- dim(X)[1]
 
-# smooth data
-X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
+# Fourier basis
+basis <- create.fourier.basis(rangeval=range(time.grid), nbasis=7)
 
-# save coefficients
-beta <- t(X_smoothed_f$fd$coefs)
+# coefficients
+beta <- t(Data2fd(y=t(X), argvals=time.grid, basisobj=basis)$coefs)
 
 # plot smoothed data
 basis.t <- t(eval.basis(time.grid, basis))
 X_smooth <- beta %*% basis.t
+x11()
 matplot(time.grid, t(X_smooth), type='l', col=col)
 
-
 smoothing_parameters <- list('step' = 1,
-                             'number_basis' = L,
-                             'spline_order' = 4)
+                             'number_basis' = 7,
+                             'spline_order' = 1)
 smoothing_list <- list('basis' = basis,
                        'beta'= beta,
                        'time.grid' = time.grid,
@@ -102,15 +100,16 @@ hyper_list <- hyperparameters(var_phi = 0.001,
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
                               scale = 1,
-                              mean_phi = 10)
+                              mean_phi = 1.1)
 
+plot(seq(0,2,by=0.01),invgamma::dinvgamma(seq(0,2,by=0.01), shape =hyper_list$c, rate = hyper_list$d ),'l')
 
 #### CALL ####-------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 1000,
-                  burnin = 500,
-                  M = 1000,
-                  mass = 0.6,
+out <- FBNP_hyper(n_iter = 10000,
+                  burnin = 5000,
+                  M = 900,
+                  mass = 75,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
 
@@ -125,7 +124,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 out[['algorithm_parameters']] <- NULL
 
 source("savez.R")
-savez(out, "GP_IG_L_20")
+savez(out, "GP_ig_final")
 
 #save(out, file="Results/nico_11_2")
 #save(out, file="Results/tere_orig_nosigma_m100v1e3")
@@ -135,10 +134,16 @@ savez(out, "GP_IG_L_20")
 library(coda)
 library(devtools)
 library(mcclust.ext)
-load("Results/tere_orig_nosigma_3gr_v1e-1")
+#load("Results/tere_orig_nosigma_3gr_v1e-1")
 # traceplot of cluster allocation variables
 source("traceplot_K.R")
 traceplot_K(out, smoothing_list, run_parameters)  
+
+# TODO:
+coda_import <- as.mcmc(cbind(CL_MAR, CL_TRSB))
+summary(coda_import)
+geweke.diag(coda_import)
+acfplot(coda_import)
 
 n.1+n.2
 apply(out$K[-1,], 2, max)
@@ -169,9 +174,35 @@ for(ii in 1:5)
 
 
 # choose a single partition, in this case "avg"
-partition.BIN <- minbinder.ext(psm,cls.draw = K, method="draws")[[1]]
-
+partition.BIN <- minbinder.ext(psm,cls.draw = K, method="comp")[[1]]
 x11()
 matplot(t(X), type="l", col=partition.BIN)
 
+
+load("GOSE.RData")
+GOSE.rm <- GOSE
+
+partition <- partition.BIN
+
+# partition by clusters
+x11()
+par(mfrow = c(3,3))
+count <- 1
+for(j in levels(as.factor(partition)))
+{
+  indexes.j <- which(partition==j)
+  if(length(indexes.j)==1)
+    matplot(X[indexes.j,], type='l', col=GOSE.rm[indexes.j], xlab="", main=paste0("Cluster ",count))
+  else
+    matplot(t(X[indexes.j,]), type='l', col=GOSE.rm[indexes.j], xlab="", main=paste0("Cluster ",count))
+  count <- count+1
+}
+
+# partition by GOSE
+x11()
+par(mfrow = c(2,1))
+for(i in 1:2)
+{
+  matplot(t(X[GOSE.rm==i,]), col=partition[GOSE.rm==i], type = 'l', main = paste("GOSE",i), xlab="")
+}
 

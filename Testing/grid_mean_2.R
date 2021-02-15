@@ -1,23 +1,106 @@
 
-savez <- function(out, name_dir)
+# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
+
+rm(list=ls())
+cat("\014")
+
+library(fda)
+library(fdakma)
+library(latex2exp)
+source("FBNP.R")
+source("FBNP_hyper.R")
+source("FBNP_hyper_alltime.R")
+source("Prior Elicitation.R")
+source('Smoothing.R')
+source("FBNP_orig_nosigma.R")
+
+#### DATA #### -------------------------------------------------------------------------------
+
+# load data and rescale
+load("X.RData")
+
+matplot(t(X[12:16,]), type='l', lwd=1, lty=1, 
+        main="", xlab="Time [ms]", #ylab="Evoked potential [micro volt]",
+        ylab=TeX('Evoked Potential $\\[\\mu$V$\\]$'),
+        #ylab=TeX('Evoked potential'),
+        #ylab=paste0("Evoked potential [",expression(mu),"V]"),
+        ylim=c(-700,650))
+
+# eliminate bad data
+#eliminate <- c(12,13,19,24)
+eliminate <- c()
+X <- X[-eliminate,] # matrix n x n_time, HO TOLTO ANCHE LA 24
+
+# rescale data
+#rescale <- 1 # 
+rescale <- max(X)
+X <- X/rescale 
+matplot(t(X), type='l')
+
+# cut x-axis
+X_1 <- X[,seq(151,1050)]
+matplot(t(X_1), type='l')
+dim(X_1)
+X <- X_1
+
+smoothing_list <- smoothing(X = X, 
+                            step = 10, 
+                            nbasis = 25, 
+                            spline_order = 4)
+
+smoothing_list[['smoothing_parameters']][['rescale_parameter']] <- rescale
+smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminate
+
+
+###############################################################################################
+
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+source("PSM.R")
+library(coda)
+library(devtools)
+library(mcclust.ext)
+
+mean.phi.grid <- c(0.1,0.5,0.7,0.9,1.2,1.5,2,5,7,8,10)
+jj = 1
+
+for(mean_phi in mean.phi.grid)
 {
-  source("PSM.R")
-  library(coda)
-  library(devtools)
-  library(mcclust.ext)
+  print(jj)
+  jj = jj+1
+  
+  hyper_list <- hyperparameters(var_phi = 0.01, 
+                                X = smoothing_list$X,
+                                beta = smoothing_list$beta,
+                                scale = 1,
+                                mean_phi = mean_phi)
+  
+  out <- FBNP_hyper(n_iter = 200,
+                    burnin = 0,
+                    M = 300,
+                    mass = 0.5,
+                    smoothing = smoothing_list,
+                    hyperparam = hyper_list)
+  
+  run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
+                         'prior_parameters'     = hyper_list,
+                         'smoothing_parameters' = smoothing_list$smoothing_parameters)
+  
   
   # save old directory to get back there at the end
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/",name_dir)
+  new.dir <- paste0(dir.current,"/Results/TEST_14_2/dati_veri_mean_phi_",mean_phi)
   
   # create such directory and go there
   dir.create(new.dir)
   setwd(new.dir) 
   
   # save RData ----------------------------------------------------------------------
-  #save(out, run_parameters, file = "Output.RData")
+  save(out, run_parameters, file = "Output.RData")
   
   # save traceplots -----------------------------------------------------------------
   # extract content of out
@@ -32,11 +115,10 @@ savez <- function(out, name_dir)
   mass      <- run_parameters$algorithm_parameters[[4]]
   
   # IG
-  library(invgamma)
   png(file = "InverseGamma.png", width = 8000, height = 5000, units = "px", res = 800)
   plot(seq(0,50,by=0.01), dinvgamma(seq(0,50,by=0.01),
                                     shape=hyper_list$c,
-                                    rate=hyper_list$d), type='l'
+                                    rate=hyper_list$d)
   )
   dev.off()
   
@@ -48,7 +130,7 @@ savez <- function(out, name_dir)
   par(mfrow=n2mfrow(n/2))
   par(oma=c(0,0,2,0))
   for(i in 1:nhalf)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    traceplot(as.mcmc(K[-c(1:20),i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables "), outer = TRUE)
   dev.off()
@@ -58,7 +140,7 @@ savez <- function(out, name_dir)
   par(mfrow=n2mfrow(n-nhalf))
   par(oma=c(0,0,2,0))
   for(i in (nhalf+1):n)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    traceplot(as.mcmc(K[-c(1:20),i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables "), outer = TRUE)
   dev.off()
@@ -96,6 +178,7 @@ savez <- function(out, name_dir)
   dev.off()
   
   
+  
   # print information on a txt file -----------------------------------------------------
   cat(
     "ALGORITHM\n",
@@ -108,13 +191,13 @@ savez <- function(out, name_dir)
     "step:       ", run_parameters$smoothing_parameters$step, "\n",
     "L:          ", run_parameters$smoothing_parameters$number_basis, "\n",
     "rescale:    ", run_parameters$smoothing_parameters$rescale_parameter, "\n",
-    "eliminated: ", run_parameters$smoothing_parameters$observation_eliminated, "\n",
+    "eliminated: ", run_parameters$smoothing_parameters$observation_eliminated,
     
-    "var phi: ", hyper_list$desired_prior_values, "\n",
-    "mean_phi:", hyper_list$mean_phi,
+    "var phi:    ", hyper_list$desired_prior_values,
     
     file="Output.txt", sep=""
   )
   
   setwd(dir.current)
+  
 }
