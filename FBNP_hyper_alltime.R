@@ -2,7 +2,6 @@
 library(invgamma)
 library(fda)
 library(MASS)
-library(tictoc)
 library(pbmcapply)
 
 #' 
@@ -23,9 +22,11 @@ library(pbmcapply)
 #' 
 #' 
 #' @return a list with the following components:
-#'         K: (n_iter-burnin) x n matrix, [K]ij = cluster of observation j at iteration i
-#'         algorithm_parameters
-#' 
+#'         K:                    (n_iter-burnin) x n matrix, [K]ij = cluster of observation j at iteration i
+#'         log_L:                (n_iter-burnin)-long vector, keeps track of the overall log-likelihood
+#'         COUNTER:              (n_iter-burnin)-long vector, keeps track of the number of new proposed clusters at each iteration
+#'         algorithm_parameters: list of the input parameters
+#'         
 
 FBNP_hyper_alltime <- function (n_iter, 
                   burnin=0,
@@ -56,7 +57,6 @@ FBNP_hyper_alltime <- function (n_iter,
   # basis.t: (L x n_time) matrix of basis fuctions evaluated on the time time grid
   basis.t <- t(eval.basis(time.grid, basis))
   
-  # TODO: booh
   # smooth data:
   X <- beta %*% basis.t
   
@@ -104,16 +104,25 @@ FBNP_hyper_alltime <- function (n_iter,
   #(K)_ij: cluster assignment at iteration i of observation j
   K <- matrix(0, nrow=(n_iter-burnin), ncol=n)
   
-  # K_curr salva l'assegnazione corrente, così che possiamo salvare i K solo
-  # per le iterazioni dopo il burnin
+  # save current cluster assignment
   K_curr <- sample(1:M, size=n)
-  #K_curr <- rep(1,n)
+  
+  # save next cluster assignment, it is an information used for the evaluation
+  # of COUNTER (see RETURN VARIABLES)
+  K_new <- K_curr
+  
+  #### RETURN VARIABLES ---------------------------------------------------------------------------
+  
+  # a vector containing the evaluation of the log-likelihood at each iteration
+  overall_logL <- numeric(n_iter-burnin)
+  
+  # a vector containing the number of new clusters (i.e. not seen in the iteration before)
+  # proposed at each iteration
+  COUNTER <-  numeric(n_iter-burnin)
   
   #### ALGORITHM ----------------------------------------------------------------------------------
   
   pb <- progressBar(0, max = n_iter, initial = 0, style = "ETA")
-  tic(quiet=TRUE)
-  
   
   for(iter in 1:n_iter)
   {
@@ -132,11 +141,10 @@ FBNP_hyper_alltime <- function (n_iter,
       if(r>0)
       {
         ## PHI
-        
         for(t in 1:n_time)
         {
           c_r <- C[t] + r*0.5
-          d_r <- D[t] + sum( (X[indexes_j,t] - mu[j,t])^2/2) # somma su indexes
+          d_r <- D[t] + sum( (X[indexes_j,t] - mu[j,t])^2/2)
           phi[j,t] <- rinvgamma(n=1, shape=c_r, rate=d_r)
         }
         
@@ -145,11 +153,11 @@ FBNP_hyper_alltime <- function (n_iter,
         k.n <- k0 + 1
         theta.n <- (k0*theta0 + mu_coef[j,])/k.n
         delta.n <- delta0 + k0/k.n * (mu_coef[j,]-theta0) %*% t(mu_coef[j,]-theta0)
-        Lambda0 <- LaplacesDemon::rinvwishart(nu.n, delta.n) # TODO: change name
+        Lambda0 <- LaplacesDemon::rinvwishart(nu.n, delta.n)
         Lambda0_inv <- solve(Lambda0)
         
         ## m0
-        m0 <- mvrnorm(n=1, mu=theta.n, Sigma=Lambda0) # TODO: change name
+        m0 <- mvrnorm(n=1, mu=theta.n, Sigma=Lambda0)
         
         ## mu_coef (coefficients of basis projection)
         # first compute coefficients of the posterior distribution of mu_coef:
@@ -158,7 +166,9 @@ FBNP_hyper_alltime <- function (n_iter,
         {
           magic <- magic + ( basis.t[,t] %*% t(basis.t[,t]) )/(phi[j,t])
         }
+        
         Lambda_r <- solve(Lambda0_inv + r*magic)
+        
         if(r>1)
         {
           mu_r <- Lambda_r %*% ( Lambda0_inv %*% m0 + magic %*% colSums(beta[indexes_j,]) )
@@ -180,10 +190,10 @@ FBNP_hyper_alltime <- function (n_iter,
         }
         
         ## Lambda0
-        Lambda0 <- LaplacesDemon::rinvwishart(nu0, delta0) # TODO: change name
+        Lambda0 <- LaplacesDemon::rinvwishart(nu0, delta0)
         
         ## m0
-        m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0/k0) # TODO: change name
+        m0 <- mvrnorm(n=1, mu=theta0, Sigma=Lambda0/k0)
         
         ## mu_coef: sample coefficients of basis projection
         mu_coef[j,] <- mvrnorm(n=1, mu=m0, Sigma=Lambda0)
@@ -197,8 +207,10 @@ FBNP_hyper_alltime <- function (n_iter,
     #### STEP 2: K ####----------------------------------------------------------------------------
     
     # (pi)j: probability that observation i belongs to cluster j, Ki~discrete(p_i[1],...,p_i[M]) 
-    #        (lo sovrascriviamo per ogni i dentro il ciclo)
+    #        (we overwrite it for each observation i in the loop)
     p_i <- numeric(M)
+    logL <- 0
+    counter <- 0
     
     # iterate over the observations
     for(i in 1:n)
@@ -208,19 +220,31 @@ FBNP_hyper_alltime <- function (n_iter,
       {
         p_i[j] <- log(p[j]) + sum( (-0.5)*log(2*pi*phi[j,]) - ((X[i,]-mu[j,])^2)/(2*phi[j,]) ) # sum over times
       }
-      #p_i <- p_i - max(p_i) # TODO: avoid the subtraction of max and the application of exponential
-      #p_i <- p_i - min(p_i)
-      p_i <- exp(p_i)#/sum(exp(p_i))
+      
+      p_i <- exp(p_i)
       
       # update the cluster assignment at current iteration
-      K_curr[i] <- sample(1:M, size=1, prob=p_i)
+      K_new[i] <- sample(1:M, size=1, prob=p_i)
       
-      # save K
+      # update the log-likelihood
+      logL <- logL + sum( (-0.5)*log(2*pi*phi[K_new[i],]) - ((X[i,]-mu[K_new[i],])^2)/(2*phi[K_new[i],]) )
+      
+      # save
       if(iter > burnin)
       {
-        K[iter-burnin,i] <- K_curr[i]
+        K[iter-burnin,i] <- K_new[i]
       }
       
+    }
+    
+    counter <- length(unique(K_new)) - sum(unique(K_new) %in% unique(K_curr))
+    K_curr <- K_new
+    
+    # save
+    if(iter > burnin)
+    {
+      overall_logL[iter-burnin] <- logL
+      COUNTER[iter-burnin] <- counter
     }
     
     #### STEP 3: weights ####----------------------------------------------------------------------
@@ -242,34 +266,16 @@ FBNP_hyper_alltime <- function (n_iter,
     
   }
   
-  elapsed <- toc(quiet=TRUE)
-  print(paste0("Elapsed: ", round((elapsed$toc - elapsed$tic)/60), 
-               " min, ", round((elapsed$toc - elapsed$tic)%%60), " sec."))
-  
   #### RETURN -------------------------------------------------------------------------------------
   
-  algo_parameters <- c('n_iter' = n_iter,
-                       'burnin' = burnin,
-                       'M' = M,
-                       'mass' = mass)
+  algorithm_parameters <- c('n_iter' = n_iter,
+                            'burnin' = burnin,
+                            'M' = M,
+                            'mass' = mass)
   
-  out <- list(K, algo_parameters)
-  names(out) <- c("K", "algorithm_parameters")
+  out <- list(K, overall_logL, COUNTER, algorithm_parameters)
+  names(out) <- c("K", "logL", "counter", "algorithm_parameters")
   
   return(out)
   
 }
-
-
-
-
-#' TODO list:
-#'             - consider removing thinning parameter
-#'             - consider the more general case in which basis is replace with fdParobj,
-#'               a generic functional parameter object, in order to allow also roughness penalization smoothing
-#'               (in tal caso non possiamo semplicemente valutare i coefficienti in basi moltiplicando matrici)
-#' 
-
-# Adesso stiamo salvando in mu_coef_out soltatno mu_coef dell'ultimo cluster valutato
-# Quindi devo salvare mu_coef come matrice, che in ogni riga salva i coefficienti di mu del cluster j_esimo
-# In questo modo, avrò una lista di matrici

@@ -8,14 +8,11 @@ rm(list=ls())
 cat("\014")
 
 library(fda)
-library(fdakma)
 library(latex2exp)
 source("FBNP.R")
 source("FBNP_hyper.R")
-source("FBNP_hyper_alltime.R")
-source("Prior Elicitation.R")
+source("hyperparameters.R")
 source('Smoothing.R')
-source("FBNP_orig_nosigma.R")
 
 #### DATA #### -------------------------------------------------------------------------------
 
@@ -23,19 +20,11 @@ source("FBNP_orig_nosigma.R")
 load("X.RData")
 
 matplot(t(X[12:16,]), type='l', lwd=1, lty=1, 
-        main="", xlab="Time [ms]", #ylab="Evoked potential [micro volt]",
+        main="", xlab="Time [ms]",
         ylab=TeX('Evoked Potential $\\[\\mu$V$\\]$'),
-        #ylab=TeX('Evoked potential'),
-        #ylab=paste0("Evoked potential [",expression(mu),"V]"),
         ylim=c(-700,650))
 
-# eliminate bad data
-#eliminate <- c(12,13,19,24)
-eliminate <- c()
-X <- X[-eliminate,] # matrix n x n_time, HO TOLTO ANCHE LA 24
-
 # rescale data
-#rescale <- 1 # 
 rescale <- max(X)
 X <- X/rescale 
 matplot(t(X), type='l')
@@ -51,70 +40,24 @@ smoothing_list <- smoothing(X = X,
                             nbasis = 25, 
                             spline_order = 4)
 
-smoothing_list[['smoothing_parameters']][['rescale_parameter']] <- rescale
-smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminate
-
-
-
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(mean_phi = 5,
-                              var_phi = 0.01, 
-                              X = smoothing_list$X,
+hyper_list <- hyperparameters(X = smoothing_list$X,
                               beta = smoothing_list$beta,
-                              scale = 1)
+                              mean_phi = 500,
+                              var_phi = 10)
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 2000,
-                  burnin = 0,
-                  M = 1000,
-                  mass = 5,
+out <- FBNP_hyper(n_iter = 35000,
+                  burnin = 10000,
+                  M = 500,
+                  mass = 0.5,
                   smoothing = smoothing_list,
                   hyperparam = hyper_list)
 
 
 ### SAVE OUTPUT #### -------------------------------------------------------------------------
 
-run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
-                       'prior_parameters'     = hyper_list,
-                       'smoothing_parameters' = smoothing_list$smoothing_parameters
-                       )
-
-out[['algorithm_parameters']] <- NULL # ok ma perché allora non salvarli direttamente da qui azichÃ¨ farli restiruire da FBNP e poi rimuoverli?
-
-# save output
-load('savez.R')
-savez(out,'Big runs')
-
-
-#### DIAGNOSTIC ####-------------------------------------------------------------------------
-
-library(coda)
-library(devtools)
-library(mcclust.ext)
-
-# traceplot of cluster allocation variables
-source("traceplot_K.R")
-traceplot_K(out, smoothing_list, run_parameters)  
-
-source("PSM.R")
-K <- out$K
-psm <- PSM(K)
-{x11(); heatmap(psm, Rowv = NA, Colv = NA)}
-{x11(); plotpsm(psm)}
-
-
-
-# estimate best partition
-part_BIN <- minbinder.ext(psm,cls.draw = K, method="all",include.greedy=TRUE)
-summary(part_BIN)
-best.partition <- part_BIN$cl["best",]
-x11()
-matplot(t(X), type="l", col=best.partition)
-
-save(out, X, file = "Results/Big runs/mass5_meanphi5_varphi0.01_M5000.RData")
-load("Results/Big runs/mass5_meanphi5_varphi0.01_M5000.RData")
-
-diagnostic(out, smoothing_list, run_parameters)
+save(out, smoothing_list, hyper_list, file = "Results/Big runs/mass100_meanphi0.9_varphi0.001_M1000.RData")
