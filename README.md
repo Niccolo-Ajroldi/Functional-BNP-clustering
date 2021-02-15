@@ -34,6 +34,7 @@ The repository is presents the following elements:
     * `FBNP_hyper.R` containing a function that implements Gibbs Sampler **with hyperpriors**
 * `Smoothing`
 * `Hyperparameters`
+* etc.
 * `Ajroldi-Bortolotti-Marchionni_Functional-BNP-Clustering.pdf`: report of the project
 
 ### Installation
@@ -49,7 +50,7 @@ After having conveniently tuned the parameters, our algorithm is able to properl
 
 
 ### Clinical data
-
+Since we work in a univariate setting, we select one of the four components of our functional observations. In particular, we run our algorithm on the right lobe short latency signal. 
 ![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
 
 ### References
