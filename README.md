@@ -1,7 +1,7 @@
 # Functional-BNP-Clustering
 ###  Bayesian nonparametric functional clustering
 
-This is the repository of the code for the project of the course *Bayesian Statistics* held by Professor A. Guglielmi at Politecnico di Milano during the academic year 2020/2021.
+This is the repository for the project of the course *Bayesian Statistics* held by Professor A. Guglielmi at Politecnico di Milano during the academic year 2020/2021.
 The tutor of the project was R. Corradin, PhD.
 
 We were given 26 multivariate functional observation with 4 components, each of which represents a somatosensory evoked potential, i.e. the electrical modifications occurringin the central nervous system following a stimulus, detected within 2 seconds after the stimulus over 1600 instants.
