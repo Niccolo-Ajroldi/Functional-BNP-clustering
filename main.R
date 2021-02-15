@@ -13,7 +13,7 @@ library(latex2exp)
 source("FBNP.R")
 source("FBNP_hyper.R")
 source("FBNP_hyper_alltime.R")
-source("Prior Elicitation.R")
+source("hyperprior.R")
 source('Smoothing.R')
 source("FBNP_orig_nosigma.R")
 
@@ -36,15 +36,30 @@ X <- X[-eliminate,] # matrix n x n_time, HO TOLTO ANCHE LA 24
 
 # rescale data
 #rescale <- 1 # 
-rescale <- max(X)
-X <- X/rescale 
-matplot(t(X), type='l')
+#rescale <- max(X)
+#X <- X/rescale 
+#matplot(t(X), type='l')
+
+png(file = paste0("Data_raw.png"), width = 8000, height = 5000, units = "px", res = 800)
+matplot(t(X), type='l', lwd=1, lty=1, 
+        xlab="Time [ms]",
+        ylab=TeX('Evoked Potential $\\[\\mu$V$\\]$'),
+        main="Evoked potential")
+dev.off()
 
 # cut x-axis
 X_1 <- X[,seq(151,1050)]
 matplot(t(X_1), type='l')
 dim(X_1)
 X <- X_1
+
+png(file = paste0("Data_cutted.png"), width = 8000, height = 5000, units = "px", res = 800)
+matplot(seq(151,1050),
+        t(X), type='l', lwd=1, lty=1, 
+        xlab="Time [ms]",
+        ylab=TeX('Evoked Potential $\\[\\mu$V$\\]$'),
+        main="Evoked potential")
+dev.off()
 
 smoothing_list <- smoothing(X = X, 
                             step = 12, 
@@ -59,14 +74,8 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 # elicit hyperparameters
 hyper_list <- hyperparameters(mean_phi = 0.85,
                               var_phi = 0.001, 
-                              X = smoothing_list$X,
-                              beta = smoothing_list$beta,
-                              scale = 1)
-
-plot(seq(0,5,by=0.01),invgamma::dinvgamma(seq(0,5,by=0.01), shape =hyper_list$c, rate = hyper_list$d ),'l')
-
-hyper_list$c
-hyper_list$d
+                              X_obs = smoothing_list$X,
+                              beta = smoothing_list$beta)
 
 #### CALL #### -------------------------------------------------------------------------------
 
@@ -88,12 +97,13 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 out[['algorithm_parameters']] <- NULL # ok ma perché allora non salvarli direttamente da qui azichÃ¨ farli restiruire da FBNP e poi rimuoverli?
 
 source('savez.R')
-savez(out,'TEST_15_2/hope_dati')
+savez(out,'TEST_15_2/mass60_mean085_rifatto')
 
 #### DIAGNOSTIC ####-------------------------------------------------------------------------
 
+#rm(list=ls())
 #setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
-#load("Results/NicoNight/DAJE_mean_phi_1/Output.RData")
+#load("Results/NicoNight/mass60_mean085/Output.RData")
 
 library(coda)
 library(devtools)

@@ -17,7 +17,7 @@ savez <- function(out, name_dir)
   setwd(new.dir) 
   
   # save RData ----------------------------------------------------------------------
-  #save(out, run_parameters, file = "Output.RData")
+  save(out, run_parameters, file = "Output.RData")
   
   # save traceplots -----------------------------------------------------------------
   # extract content of out

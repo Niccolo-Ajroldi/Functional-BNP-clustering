@@ -17,68 +17,75 @@ source("FBNP_hyper_alltime.R")
 source("FBNP_orig_nosigma.R")
 source("new_FBNP.R")
 source("FBNP_hyper.R")
-source("Prior Elicitation.R")
+source("hyperprior.R")
 source('Smoothing.R')
 source("new_Prior_elicitation.R")
 
 #### DATA ####-------------------------------------------------------------------------------
 
-# simulate data from 2 Gaussian processes
-
+# simulate data from 3 Gaussian processes
 n.1 <- 10
 n.2 <- 10
 n.3 <- 10
 n <- n.1+n.2+n.3
+
+# time grid
 n_time <- 100
 time.grid <- seq(0, 10, length.out = n_time)
 
-# Exponential covariance function over a time.grid
+library(invgamma)
 
-# tune correlation of simulated data:
-# increase alpha to increase variability in each point
-# increase beta to decrease covariance between times (high beta -> more rough function)
-alpha <- 0.07
-beta  <- 0.15
-psi.1 <- exp_cov_function(time.grid, alpha, beta)
-s#View(psi.1)
+# diagonal covariance matrix
+mean_phi=7
+var_phi=4
+c <- mean_phi^2/var_phi + 2
+d <- mean_phi^3/var_phi + mean_phi
+psi.1 <- diag(nrow=n_time,ncol=n_time) * rinvgamma(n_time, shape=c, rate=d)
+image(psi.1)
 
 # mean function
-mu.1 <- sin(0.2*pi*time.grid)
-mu.2 <- sin(0.35*pi*(time.grid-4))
-mu.3 <- sin(0.2*pi*(time.grid+2))
+mu.1 <- 10*sin(0.2*pi*time.grid)
+mu.2 <- 10*sin(0.35*pi*(time.grid-4))
+mu.3 <- 10*sin(0.2*pi*(time.grid+2))
 
-# simulate data
-set.seed(2)
+# bind simulated data
+set.seed(1)
 data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
 data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
 data.3 <- generate_gauss_fdata(n.3,mu.3,Cov=psi.1)
-
 X <- rbind(data.1, data.2, data.3)
+
+# plot simulated data
 col <- c(rep(1,n.1), rep(2,n.2), rep(3,n.3))
 matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
 
+#png(file = paste0("SimulatedGP.png"), width = 8000, height = 5000, units = "px", res = 800)
+#matplot(time.grid, t(X), type='l', col=col, main="Simulated GP", ylab="y")
+#dev.off()
+
 # rescale data
-rescale <- 1 # rescale <- max(X)
+rescale <- max(X)
 X <- X/rescale 
 
-# basis 
-L <- 15
-basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
+# number of data
+n <- dim(X)[1]
+
+# Fourier basis
+basis <- create.fourier.basis(rangeval=range(time.grid), nbasis=7)
+
+# coefficients
+beta <- t(Data2fd(y=t(X), argvals=time.grid, basisobj=basis)$coefs)
 
 # smooth data
-X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
-
-# save coefficients
-beta <- t(X_smoothed_f$fd$coefs)
-
-# plot smoothed data
 basis.t <- t(eval.basis(time.grid, basis))
 X_smooth <- beta %*% basis.t
+
+# plot smoothed data
 matplot(time.grid, t(X_smooth), type='l', col=col)
 
 smoothing_parameters <- list('step' = 1,
-                             'number_basis' = L,
-                             'spline_order' = 4)
+                             'number_basis' = 7,
+                             'spline_order' = 1)
 smoothing_list <- list('basis' = basis,
                        'beta'= beta,
                        'time.grid' = time.grid,
@@ -88,19 +95,18 @@ smoothing_list <- list('basis' = basis,
 #### HYPERPARAM ####-------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 0.01, 
+hyper_list <- hyperparameters(var_phi = 0.001, 
                               X = smoothing_list$X,
                               beta = smoothing_list$beta,
-                              scale = 1,
-                              mean_phi = 10)
+                              mean_phi = 1.1)
 
 
 #### CALL ####-------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 7000,
-                          burnin = 2000,
-                          M = 1000,
-                          mass = 0.6,
+out <- FBNP_hyper(n_iter = 8000,
+                          burnin = 3000,
+                          M = 500,
+                          mass = 65,
                           smoothing = smoothing_list,
                           hyperparam = hyper_list)
 
@@ -115,7 +121,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 out[['algorithm_parameters']] <- NULL
 
 source("savez.R")
-savez(out, "GP_DEF_5")
+savez(out, "/Results/GP_exp_def")
 
 #save(out, file="Results/nico_11_2")
 #save(out, file="Results/tere_orig_nosigma_m100v1e3")

@@ -17,74 +17,72 @@ source("FBNP_hyper_alltime.R")
 source("FBNP_orig_nosigma.R")
 source("new_FBNP.R")
 source("FBNP_hyper.R")
-source("Prior Elicitation.R")
+source("hyperparameters.R")
 source('Smoothing.R')
 source("new_Prior_elicitation.R")
 
 #### DATA ####-------------------------------------------------------------------------------
 
-# simulate data from 2 Gaussian processes
-
+# simulate data from 3 Gaussian processes
 n.1 <- 10
 n.2 <- 10
 n.3 <- 10
 n <- n.1+n.2+n.3
+
+# time grid
 n_time <- 100
 time.grid <- seq(0, 10, length.out = n_time)
 
-# Exponential covariance function over a time.grid
-
-# tune correlation of simulated data:
-# increase alpha to increase variability in each point
-# increase beta to decrease covariance between times (high beta -> more rough function)
-alpha <- 0.07
+# exponential covariance operator
+alpha <- 0.05
 beta  <- 0.2
 psi.1 <- exp_cov_function(time.grid, alpha, beta)
-#View(psi.1)
+image(psi.1)
 
 # mean function
 mu.1 <- sin(0.2*pi*time.grid)
 mu.2 <- sin(0.35*pi*(time.grid-4))
-mu.3 <- sin(0.2*pi*(time.grid+2.5))
+mu.3 <- sin(0.2*pi*(time.grid+2))
 
-# simulate data
+# bind simulated data
 set.seed(2)
 data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
 data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
 data.3 <- generate_gauss_fdata(n.3,mu.3,Cov=psi.1)
-
 X <- rbind(data.1, data.2, data.3)
+
+# plot simulated data
 col <- c(rep(1,n.1), rep(2,n.2), rep(3,n.3))
 matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
 
 # rescale data
-rescale <- 1 # rescale <- max(X)
+rescale <- max(X)
 X <- X/rescale 
 
-# basis 
-L <- 15
-basis <- create.bspline.basis(rangeval=range(time.grid), nbasis=L, norder=4)
+# number of data
+n <- dim(X)[1]
+
+# Fourier basis
+basis <- create.fourier.basis(rangeval=range(time.grid), nbasis=7)
+
+# coefficients
+beta <- t(Data2fd(y=t(X), argvals=time.grid, basisobj=basis)$coefs)
 
 # smooth data
-X_smoothed_f <- smooth.basis(argvals=time.grid, y=t(X), fdParobj=basis)
-
-# save coefficients
-beta <- t(X_smoothed_f$fd$coefs)
-
-# plot smoothed data
 basis.t <- t(eval.basis(time.grid, basis))
 X_smooth <- beta %*% basis.t
+
+# plot smoothed data
 matplot(time.grid, t(X_smooth), type='l', col=col)
 
 smoothing_parameters <- list('step' = 1,
-                             'number_basis' = L,
-                             'spline_order' = 4)
+                             'number_basis' = 7,
+                             'spline_order' = 1)
 smoothing_list <- list('basis' = basis,
                        'beta'= beta,
                        'time.grid' = time.grid,
                        'X' = X,
                        'smoothing_parameters' = smoothing_parameters)
-
 
 ###############################################################################################
 
@@ -95,7 +93,7 @@ library(devtools)
 library(mcclust.ext)
 
 mean.phi.grid <- c(1.1)
-mass.grid <- c(50,60,70)
+mass.grid <- c(60,70,80)
 jj = 1
 
 for(mass in mass.grid)
@@ -106,7 +104,6 @@ for(mass in mass.grid)
   hyper_list <- hyperparameters(var_phi = 0.001, 
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
-                                scale = 1,
                                 mean_phi = 1.1)
   
   out <- FBNP_hyper(n_iter = 2000,
@@ -233,3 +230,4 @@ for(mass in mass.grid)
   setwd(dir.current)
   
 }
+

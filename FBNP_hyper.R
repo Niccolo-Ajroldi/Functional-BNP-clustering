@@ -238,7 +238,6 @@ FBNP_hyper <- function (n_iter,
       
     }
     
-
     counter <- length(unique(K_new)) - sum(unique(K_new) %in% unique(K_curr))
 
     K_curr <- K_new
