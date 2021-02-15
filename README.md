@@ -26,6 +26,15 @@ Our sampling algorithm is a Blocked Gibbs sampler presented in
 It is noteworthy that in the case with hyperpriors, we will refer to an slightly modified version of the Blocked Gibbs sampler algorithm, taking into account the full conditional for the hyperparameters.
 
 
+### Simulated data
+
+![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Simulated_GP.png)
+
+
+### Clinical data
+![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
+
+
 ## Repository structure
 
 Folders and codes are structured in the following way:
@@ -39,14 +48,6 @@ Folders and codes are structured in the following way:
 ### Installation
 
 The file `install.R` provides automatic installation of the required packages, which are reported in Section??.
-
-### Simulated data
-
-![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Simulated_GP.png)
-
-
-### Clinical data
-![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
 
 ### References
 
