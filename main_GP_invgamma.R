@@ -17,7 +17,7 @@ source("FBNP_hyper_alltime.R")
 source("FBNP_orig_nosigma.R")
 source("new_FBNP.R")
 source("FBNP_hyper.R")
-source("hyperprior.R")
+source("hyperparameters.R")
 source('Smoothing.R')
 source("new_Prior_elicitation.R")
 
