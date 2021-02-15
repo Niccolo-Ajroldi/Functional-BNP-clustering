@@ -1,13 +1,23 @@
-# Functional-BNP-clustering
+#  Bayesian nonparametric functional clustering
 
-In this repository we implement a Dirichlet Process Mixture model to perform Bayesian Nonparametric clustering of Functional Data. A detailed mathematical explanation of the model is addressed in the dedicated [report](). \
+This is the repository of the code for the project of the course *Bayesian Statistics* held by Professor A. Guglielmi at Politecnico di Milano during the academic year 2020/2021. 
+The tutor of the project was R. Corradin, PhD.
+
+We were given 26 multivariate functional observation with 4 components, each of which represents a somatosensory evoked potential, i.e. the electrical modifications occurringin the central nervous system following a stimulus, detected within 2 seconds after the stimulus over 1600 istants.
+
+The aim of the project is **to implement a functional clustering algorithm in a Bayesian nonparametric framework** in a univariate setting. In particular, we assume an infinite mixture model for our functional obervations with a Dirichlet Process as mixture distribution. Our aim is to sample from Dirichlet process in order to get a sample of the latent partition induced. A Gibbs sampler is implemented for our purposes.
+
+The algorithm and two different version of model, with and without hyperpriors for the parameters of the base measure of the Dirichlet Process,  will be first tested on simulated data and then on clinical ones.
+
+A short explanation of the model is made in this file, for further details and for a deep mathematical explanation please refer to the [report](link).
+
+
+
 The core of the Gibbs Sampler is implemented in the function `FBNP.R`.
 
-### Model
+### Model in a nutshell
 
-Observed functions x1(t),...,xn(t) are assume to be realizations of random functions X1(t),...,Xn(t). The probabiliy distribution of such random functions is a mixture of Gaussian Processes, with Dirichlet Process as mixing measure. \
-We are interested in the latent random variables defyining each GP. We will exploit ties between them to cluster observations. \
-We report here the model used for the algorithm, for a more detailed explanation refer to the attached report.
+Our observed functions are assume to be realizations of random functions that follow a mixture of Gaussian Processes, with a Dirichlet Process as mixture distribution. We are interested in the latent random parameters defyining the Gaussian Process of each observation and we will exploit ties to cluster them. We perform a dimensionality reduction assuming stationarity and independence between different time points. On the other hand, the mean operator is expanded over a basis that we assume exactly spans the space of our data.  
 
 ### Repository structure
 
@@ -50,4 +60,6 @@ This markdown file is written relying on [DILLINGER](https://dillinger.io/).
 Niccolò Ajroldi - Politecnico di Milano \
 Teresa Bortolotti - Politecnico di Milano \
 Edoardo Marchionni - Politecnico di Milano
+
+
 
