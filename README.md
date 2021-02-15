@@ -40,6 +40,8 @@ The file `install.R` provides automatic installation of the required packages, w
 
 ### Clinical data
 
+![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
+
 ### References
 
 Codes are written in [R](https://www.r-project.org/): A language and environment for statistical computing. \
