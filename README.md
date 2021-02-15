@@ -27,14 +27,14 @@ It is noteworthy that in the case with hyperpriors, we will refer to an slightly
 
 
 ## Repository structure
-
-Folders and codes are structured in the following way:
-- smoothing: codes for smoothing of functional data
-- GP_simulation: codes for testing the model on data simulated from Gaussian Processes
-- ...
-- `FBNP.R` implements the Gibbs Sampler **without hyperpriors**
-- `FBNP_hyper.R` implements the Gibbs Sampler **with hyperprior**
-- Ajroldi-Bortolotti-Marchionni-Functional-BNP-Clustering.pdf: contains a report of the project
+The repository is presents the following elements:
+* `main.R`: R-script with all the steps for clustering ???
+* `FBNP`: folder containing script 
+    * `FBNP.R` containing a function that implements Gibbs Sampler **without hyperpriors**
+    * `FBNP_hyper.R` containing a function that implements Gibbs Sampler **with hyperpriors**
+* `Smoothing`
+* `Hyperparameters`
+* `Ajroldi-Bortolotti-Marchionni_Functional-BNP-Clustering.pdf`: report of the project
 
 ### Installation
 
