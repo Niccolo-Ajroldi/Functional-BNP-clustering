@@ -26,15 +26,6 @@ Our sampling algorithm is a Blocked Gibbs sampler presented in
 It is noteworthy that in the case with hyperpriors, we will refer to an slightly modified version of the Blocked Gibbs sampler algorithm, taking into account the full conditional for the hyperparameters.
 
 
-### Simulated data
-
-![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Simulated_GP.png)
-
-
-### Clinical data
-![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
-
-
 ## Repository structure
 
 Folders and codes are structured in the following way:
@@ -49,18 +40,19 @@ Folders and codes are structured in the following way:
 
 The file `install.R` provides automatic installation of the required packages, which are reported in Section??.
 
-### References
+### Simulated data
 
-Codes are written in [R](https://www.r-project.org/): A language and environment for statistical computing. \
-The following packages have been used in this project:
-- [LaplaceDemon](https://web.archive.org/web/20150206004624/http://www.bayesian-inference.com/software) Statisticat, LLC. (2020). LaplacesDemon: Complete Environment for Bayesian Inference. R package version 16.1.4.
-- [coda](https://journal.r-project.org/archive/) Plummer M, Best N, Cowles K, Vines K (2006). “CODA: Convergence Diagnosis and Output Analysis for MCMC.” R News, 6(1), 7–11.
-- [roahd](https://CRAN.R-project.org/package=roahd) Ieva F, Paganoni AM, Romo J, Tarabelloni N (2019). “roahd Package: Robust Analysis of High Dimensional Data.” The R Journal, 11(2), 291–307.
-- [MASS](http://www.stats.ox.ac.uk/pub/MASS4/) Venables WN, Ripley BD (2002). Modern Applied Statistics with S, Fourth edition. Springer, New York. ISBN 0-387-95457-0.
-- [pbmcapply](https://CRAN.R-project.org/package=pbmcapply )
-- [fda](https://cran.r-project.org/web/packages/fda/index.html)
-- [fdakma](https://cran.r-project.org/web/packages/fdakma/index.html)
-- [invgamma](https://CRAN.R-project.org/package=invgamma)
+![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Simulated_GP.png)
+
+
+### Clinical data
+![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
+
+### References
+Computation were performed using 
+>  R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+For all the R-packages used in the codes please refer to section Reference in the [report](link).
 
 This markdown file is written relying on [DILLINGER](https://dillinger.io/).
 
