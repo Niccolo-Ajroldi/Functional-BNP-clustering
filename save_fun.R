@@ -1,5 +1,16 @@
+#'
+#' Save Function
+#'
+#' It is a utility function that helps in saving the results of the
+#' run, along with the input parameters, the PSM and some traceplots useful 
+#' for a quick diagnostic
+#'
+#' @param out: output of the run of the model
+#' @param name_dir: directory in which to save
+#' 
 
-savez <- function(out, name_dir)
+
+save_fun <- function(out, name_dir)
 {
   source("PSM.R")
   library(coda)
@@ -17,7 +28,8 @@ savez <- function(out, name_dir)
   setwd(new.dir) 
   
   # save RData ----------------------------------------------------------------------
-  save(out, run_parameters, file = "Output.RData")
+  algorithm_parameters <- out$algorithm_parameters
+  save(out, algorithm_parameters, file = "Output.RData")
   
   # save traceplots -----------------------------------------------------------------
   # extract content of out
@@ -26,10 +38,10 @@ savez <- function(out, name_dir)
   basis     <- smoothing_list$basis
   time.grid <- smoothing_list$time.grid
   n_time    <- length(time.grid)
-  n_iter    <- run_parameters$algorithm_parameters[[1]]
-  burnin    <- run_parameters$algorithm_parameters[[2]]
-  M         <- run_parameters$algorithm_parameters[[3]]
-  mass      <- run_parameters$algorithm_parameters[[4]]
+  n_iter    <- out$algorithm_parameters[[1]]
+  burnin    <- out$algorithm_parameters[[2]]
+  M         <- out$algorithm_parameters[[3]]
+  mass      <- out$algorithm_parameters[[4]]
   
   # IG
   library(invgamma)

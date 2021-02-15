@@ -1,7 +1,7 @@
 
-# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
- setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+# setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -50,8 +50,8 @@ hyper_list <- hyperparameters(X = smoothing_list$X,
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 35000,
-                  burnin = 10000,
+out <- FBNP_hyper(n_iter = 5,
+                  burnin = 0,
                   M = 500,
                   mass = 0.5,
                   smoothing = smoothing_list,
@@ -61,3 +61,6 @@ out <- FBNP_hyper(n_iter = 35000,
 ### SAVE OUTPUT #### -------------------------------------------------------------------------
 
 save(out, smoothing_list, hyper_list, file = "Results/Big runs/mass100_meanphi0.9_varphi0.001_M1000.RData")
+
+source("save_fun.R")
+save_fun(out,'14Feb')
