@@ -1,6 +1,7 @@
-#setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
- setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+
+# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -8,16 +9,13 @@ cat("\014")
 
 library(fda)
 library(fdakma)
-library(roahd)
-library(coda)
 library(latex2exp)
 source("FBNP.R")
-source("FBNP_hyper_alltime.R")
-source("new_FBNP.R")
 source("FBNP_hyper.R")
+source("FBNP_hyper_alltime.R")
 source("Prior Elicitation.R")
 source('Smoothing.R')
-source("new_Prior_elicitation.R")
+source("FBNP_orig_nosigma.R")
 
 #### DATA #### -------------------------------------------------------------------------------
 
@@ -49,8 +47,8 @@ dim(X_1)
 X <- X_1
 
 smoothing_list <- smoothing(X = X, 
-                            step = 12, 
-                            nbasis = 20, 
+                            step = 10, 
+                            nbasis = 25, 
                             spline_order = 4)
 
 smoothing_list[['smoothing_parameters']][['rescale_parameter']] <- rescale
@@ -58,33 +56,31 @@ smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminat
 
 
 ###############################################################################################
+
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 source("PSM.R")
 library(coda)
 library(devtools)
 library(mcclust.ext)
 
-mean.phi.grid <- c(0.7,0.8,0.9,0.6)
-mass.grid <- c()
-var.grid <- c(0.1,0.05,0.01)
+mean.phi.grid <- c(0.1,0.5,0.7,0.9,1.2,1.5,2,5,7,8,10)
 jj = 1
-length(mean.phi.grid)
 
 for(mean_phi in mean.phi.grid)
 {
   print(jj)
-  
   jj = jj+1
   
-  hyper_list <- hyperparameters(var_phi = 0.001, 
+  hyper_list <- hyperparameters(var_phi = 0.01, 
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
                                 scale = 1,
                                 mean_phi = mean_phi)
   
-  out <- FBNP_hyper(n_iter = 2000,
-                    burnin = 1000,
-                    M = 500,
-                    mass = 50,
+  out <- FBNP_hyper(n_iter = 200,
+                    burnin = 0,
+                    M = 300,
+                    mass = 0.5,
                     smoothing = smoothing_list,
                     hyperparam = hyper_list)
   
@@ -97,7 +93,7 @@ for(mean_phi in mean.phi.grid)
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/NicoNight/Speranza/mean_phi_",mean_phi)
+  new.dir <- paste0(dir.current,"/Results/TEST_14_2/dati_veri_mean_phi_",mean_phi)
   
   # create such directory and go there
   dir.create(new.dir)
@@ -134,7 +130,7 @@ for(mean_phi in mean.phi.grid)
   par(mfrow=n2mfrow(n/2))
   par(oma=c(0,0,2,0))
   for(i in 1:nhalf)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    traceplot(as.mcmc(K[-c(1:20),i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables "), outer = TRUE)
   dev.off()
@@ -144,7 +140,7 @@ for(mean_phi in mean.phi.grid)
   par(mfrow=n2mfrow(n-nhalf))
   par(oma=c(0,0,2,0))
   for(i in (nhalf+1):n)
-    traceplot(as.mcmc(K[,i]), main=paste0("Observation ",i))#, ylim=c(0,M))
+    traceplot(as.mcmc(K[-c(1:20),i]), main=paste0("Observation ",i))#, ylim=c(0,M))
   #title("Cluster allocation variables", outer = TRUE)
   title(paste0("Cluster allocation variables "), outer = TRUE)
   dev.off()

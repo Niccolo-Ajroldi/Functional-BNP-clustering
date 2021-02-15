@@ -1,7 +1,7 @@
 
-setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-# setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+#setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
+ setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -27,7 +27,6 @@ matplot(t(X[12:16,]), type='l', lwd=1, lty=1,
 # rescale data
 rescale <- max(X)
 X <- X/rescale 
-matplot(t(X), type='l')
 
 # cut x-axis
 X_1 <- X[,seq(151,1050)]
@@ -36,9 +35,10 @@ dim(X_1)
 X <- X_1
 
 smoothing_list <- smoothing(X = X, 
-                            step = 9, 
-                            nbasis = 25, 
+                            step = 12, 
+                            nbasis = 20, 
                             spline_order = 4)
+
 
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 

@@ -1,6 +1,7 @@
-#setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
+
+# setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
- setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 # setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
 
 rm(list=ls())
@@ -10,81 +11,105 @@ library(fda)
 library(fdakma)
 library(roahd)
 library(coda)
-library(latex2exp)
+
 source("FBNP.R")
 source("FBNP_hyper_alltime.R")
+source("FBNP_orig_nosigma.R")
 source("new_FBNP.R")
 source("FBNP_hyper.R")
-source("Prior Elicitation.R")
+source("hyperparameters.R")
 source('Smoothing.R')
 source("new_Prior_elicitation.R")
 
-#### DATA #### -------------------------------------------------------------------------------
+#### DATA ####-------------------------------------------------------------------------------
 
-# load data and rescale
-load("X.RData")
+# simulate data from 3 Gaussian processes
+n.1 <- 10
+n.2 <- 10
+n.3 <- 10
+n <- n.1+n.2+n.3
 
-matplot(t(X[12:16,]), type='l', lwd=1, lty=1, 
-        main="", xlab="Time [ms]", #ylab="Evoked potential [micro volt]",
-        ylab=TeX('Evoked Potential $\\[\\mu$V$\\]$'),
-        #ylab=TeX('Evoked potential'),
-        #ylab=paste0("Evoked potential [",expression(mu),"V]"),
-        ylim=c(-700,650))
+# time grid
+n_time <- 100
+time.grid <- seq(0, 10, length.out = n_time)
 
-# eliminate bad data
-#eliminate <- c(12,13,19,24)
-eliminate <- c()
-X <- X[-eliminate,] # matrix n x n_time, HO TOLTO ANCHE LA 24
+# exponential covariance operator
+alpha <- 0.05
+beta  <- 0.2
+psi.1 <- exp_cov_function(time.grid, alpha, beta)
+image(psi.1)
+
+# mean function
+mu.1 <- sin(0.2*pi*time.grid)
+mu.2 <- sin(0.35*pi*(time.grid-4))
+mu.3 <- sin(0.2*pi*(time.grid+2))
+
+# bind simulated data
+set.seed(2)
+data.1 <- generate_gauss_fdata(n.1,mu.1,Cov=psi.1)
+data.2 <- generate_gauss_fdata(n.2,mu.2,Cov=psi.1)
+data.3 <- generate_gauss_fdata(n.3,mu.3,Cov=psi.1)
+X <- rbind(data.1, data.2, data.3)
+
+# plot simulated data
+col <- c(rep(1,n.1), rep(2,n.2), rep(3,n.3))
+matplot(time.grid, t(X), type='l', col=col, main="Simulated GP")
 
 # rescale data
-#rescale <- 1 # 
 rescale <- max(X)
 X <- X/rescale 
-matplot(t(X), type='l')
 
-# cut x-axis
-X_1 <- X[,seq(151,1050)]
-matplot(t(X_1), type='l')
-dim(X_1)
-X <- X_1
+# number of data
+n <- dim(X)[1]
 
-smoothing_list <- smoothing(X = X, 
-                            step = 12, 
-                            nbasis = 20, 
-                            spline_order = 4)
+# Fourier basis
+basis <- create.fourier.basis(rangeval=range(time.grid), nbasis=7)
 
-smoothing_list[['smoothing_parameters']][['rescale_parameter']] <- rescale
-smoothing_list[['smoothing_parameters']][['observation_eliminated']] <- eliminate
+# coefficients
+beta <- t(Data2fd(y=t(X), argvals=time.grid, basisobj=basis)$coefs)
 
+# smooth data
+basis.t <- t(eval.basis(time.grid, basis))
+X_smooth <- beta %*% basis.t
+
+# plot smoothed data
+matplot(time.grid, t(X_smooth), type='l', col=col)
+
+smoothing_parameters <- list('step' = 1,
+                             'number_basis' = 7,
+                             'spline_order' = 1)
+smoothing_list <- list('basis' = basis,
+                       'beta'= beta,
+                       'time.grid' = time.grid,
+                       'X' = X,
+                       'smoothing_parameters' = smoothing_parameters)
 
 ###############################################################################################
+
+setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
 source("PSM.R")
 library(coda)
 library(devtools)
 library(mcclust.ext)
 
-mean.phi.grid <- c(0.7,0.8,0.9,0.6)
-mass.grid <- c()
-var.grid <- c(0.1,0.05,0.01)
+mean.phi.grid <- c(1.1)
+mass.grid <- c(60,70,80)
 jj = 1
-length(mean.phi.grid)
 
-for(mean_phi in mean.phi.grid)
+for(mass in mass.grid)
 {
   print(jj)
-  
   jj = jj+1
   
   hyper_list <- hyperparameters(var_phi = 0.001, 
                                 X = smoothing_list$X,
                                 beta = smoothing_list$beta,
-                                scale = 1,
-                                mean_phi = mean_phi)
+                                mean_phi = 1.1)
   
   out <- FBNP_hyper(n_iter = 2000,
                     burnin = 1000,
                     M = 500,
-                    mass = 50,
+                    mass = mass,
                     smoothing = smoothing_list,
                     hyperparam = hyper_list)
   
@@ -97,7 +122,7 @@ for(mean_phi in mean.phi.grid)
   dir.current <- getwd()
   
   # name of directory where I will put plots, I use current time in the name
-  new.dir <- paste0(dir.current,"/Results/NicoNight/Speranza/mean_phi_",mean_phi)
+  new.dir <- paste0(dir.current,"/Results/TEST_15_2/GP_exp_mass_",mass)
   
   # create such directory and go there
   dir.create(new.dir)
@@ -205,3 +230,4 @@ for(mean_phi in mean.phi.grid)
   setwd(dir.current)
   
 }
+

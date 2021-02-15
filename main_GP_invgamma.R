@@ -17,7 +17,7 @@ source("FBNP_hyper_alltime.R")
 source("FBNP_orig_nosigma.R")
 source("new_FBNP.R")
 source("FBNP_hyper.R")
-source("hyperprior.R")
+source("hyperparameters.R")
 source('Smoothing.R')
 source("new_Prior_elicitation.R")
 
@@ -92,23 +92,22 @@ smoothing_list <- list('basis' = basis,
                        'X' = X,
                        'smoothing_parameters' = smoothing_parameters)
 
-#### HYPERPARAM ####-------------------------------------------------------------------------------
+#### HYPERPARAM ####-------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(var_phi = 0.001, 
-                              X = smoothing_list$X,
+hyper_list <- hyperparameters(var_phi = 0.1, 
+                              X_obs = smoothing_list$X,
                               beta = smoothing_list$beta,
                               mean_phi = 1.1)
-
 
 #### CALL ####-------------------------------------------------------------------------------
 
 out <- FBNP_hyper(n_iter = 8000,
-                          burnin = 3000,
-                          M = 500,
-                          mass = 65,
-                          smoothing = smoothing_list,
-                          hyperparam = hyper_list)
+                  burnin = 3000,
+                  M = 900,
+                  mass = 75,
+                  smoothing = smoothing_list,
+                  hyperparam = hyper_list)
 
 
 ### SAVE OUTPUT ####-------------------------------------------------------------------------
@@ -121,7 +120,7 @@ run_parameters <- list('algorithm_parameters' = out$algorithm_parameters,
 out[['algorithm_parameters']] <- NULL
 
 source("savez.R")
-savez(out, "/Results/GP_exp_def")
+savez(out, "GP_ig_final_rifatto")
 
 #save(out, file="Results/nico_11_2")
 #save(out, file="Results/tere_orig_nosigma_m100v1e3")
@@ -131,10 +130,19 @@ savez(out, "/Results/GP_exp_def")
 library(coda)
 library(devtools)
 library(mcclust.ext)
-load("Results/tere_orig_nosigma_3gr_v1e-1")
-# traceplot of cluster allocation variables
+
+#rm(list=ls())
+#load("Results/GP_ig_final/Output.RData")
+#traceplot of cluster allocation variables
+
 source("traceplot_K.R")
 traceplot_K(out, smoothing_list, run_parameters)  
+
+# TODO:
+coda_import <- as.mcmc(cbind(CL_MAR, CL_TRSB))
+summary(coda_import)
+geweke.diag(coda_import)
+acfplot(coda_import)
 
 n.1+n.2
 apply(out$K[-1,], 2, max)
@@ -165,9 +173,35 @@ for(ii in 1:5)
 
 
 # choose a single partition, in this case "avg"
-partition.BIN <- minbinder.ext(psm,cls.draw = K, method="draws")[[1]]
-
+partition.BIN <- minbinder.ext(psm,cls.draw = K, method="comp")[[1]]
 x11()
 matplot(t(X), type="l", col=partition.BIN)
 
+
+load("GOSE.RData")
+GOSE.rm <- GOSE
+
+partition <- partition.BIN
+
+# partition by clusters
+x11()
+par(mfrow = c(3,3))
+count <- 1
+for(j in levels(as.factor(partition)))
+{
+  indexes.j <- which(partition==j)
+  if(length(indexes.j)==1)
+    matplot(X[indexes.j,], type='l', col=GOSE.rm[indexes.j], xlab="", main=paste0("Cluster ",count))
+  else
+    matplot(t(X[indexes.j,]), type='l', col=GOSE.rm[indexes.j], xlab="", main=paste0("Cluster ",count))
+  count <- count+1
+}
+
+# partition by GOSE
+x11()
+par(mfrow = c(2,1))
+for(i in 1:2)
+{
+  matplot(t(X[GOSE.rm==i,]), col=partition[GOSE.rm==i], type = 'l', main = paste("GOSE",i), xlab="")
+}
 
