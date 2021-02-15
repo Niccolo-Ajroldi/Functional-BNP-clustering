@@ -38,9 +38,10 @@ The repository is presents the following elements:
 
 ### Installation
 
-The file `install.R` provides automatic installation of the required packages, which are reported in Section??.
+The file `install.R` provides automatic installation of the required packages.
 
 ### Simulated data
+
 
 ![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Simulated_GP.png)
 
