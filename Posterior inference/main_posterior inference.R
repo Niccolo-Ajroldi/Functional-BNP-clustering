@@ -1,23 +1,16 @@
-setwd("C:/Users/Teresa Bortolotti/Documents/R/bayes_project/Functional-BNP-clustering")
-# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-# setwd("D:/Poli/Corsi/BAYESIAN/Proj/Functional-BNP-clustering")
-# setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/No github code')
-
-
 library(coda)
 library(devtools)
 library(mcclust.ext)
 
 
-#### DIAGNOSTIC ####-------------------------------------------------------------------------
+#### POSTERIOR INFERENCE ####-------------------------------------------------------------------------
 
-load("Results/Big runs/mass100_meanphi0.9_varphi0.001_M1000.RData")
 
-# traceplot of cluster allocation variables
-source("traceplot_K.R")
+# traceptlot of cluster allocation variables
+source("Tools/traceplot_K.R")
 traceplot_K(out, smoothing_list)  
 
-source("PSM.R")
+source("Tools/PSM.R")
 K <- out$K
 psm <- PSM(K)
 {x11(); heatmap(psm, Rowv = NA, Colv = NA)}
@@ -59,7 +52,16 @@ x11()
 matplot(t(X), type="l", col=best.partition)
 
 
+#### CONVERGENCE DIAGNOSTIC #####----------------------------------------------------------------------------
+
+coda_import <- as.mcmc(out$K)
+summary(coda_import)
+geweke.diag(coda_import)
+acfplot(coda_import)
+
+
 #### FACTOR comparison #####----------------------------------------------------------------------------
+# this is for our clinical data
 
 # load complete GOSE
 load("GOSE.RData")
