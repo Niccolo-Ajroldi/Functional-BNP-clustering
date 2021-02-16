@@ -54,6 +54,8 @@ Since we work in a univariate setting, we select one of the four components of o
 For posterior inference on the latent partition please refer to the  [report](link).
 ![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
 
+Unfortunately, data are not publicly avaiable and thus were not reported in this report. 
+
 
 ### References
 Computation were performed using 
