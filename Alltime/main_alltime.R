@@ -1,16 +1,12 @@
 
-
-setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-
-
 rm(list=ls())
 cat("\014")
 
 library(fda)
 library(latex2exp)
-source("Tools/FBNP/FBNP.R")
-source("Tools/FBNP/FBNP_hyper.R")
-source("Tools/hyperparameters.R")
+
+source("Tools/FBNP_hyper_alltime.R")
+source("Tools/hyperparameters_alltime.R")
 source('Tools/Smoothing.R')
 
 #### DATA #### -------------------------------------------------------------------------------
@@ -26,6 +22,7 @@ matplot(t(X[12:16,]), type='l', lwd=1, lty=1,
 # rescale data
 rescale <- max(X)
 X <- X/rescale 
+matplot(t(X), type='l')
 
 # cut x-axis
 X_1 <- X[,seq(151,1050)]
@@ -34,32 +31,26 @@ dim(X_1)
 X <- X_1
 
 smoothing_list <- smoothing(X = X, 
-                            step = 12, 
-                            nbasis = 20, 
+                            step = 5, 
+                            nbasis = 30, 
                             spline_order = 4)
-
 
 #### HYPERPARAM #### -------------------------------------------------------------------------------
 
 # elicit hyperparameters
-hyper_list <- hyperparameters(X = smoothing_list$X,
-                              beta = smoothing_list$beta,
-                              mean_phi = 500,
-                              var_phi = 10)
+hyper_list <- hyperparameters_alltime(X = smoothing_list$X,
+                                      beta = smoothing_list$beta,
+                                      var_phi = 10)
 
 #### CALL #### -------------------------------------------------------------------------------
 
-out <- FBNP_hyper(n_iter = 5,
-                  burnin = 0,
-                  M = 500,
-                  mass = 0.5,
-                  smoothing = smoothing_list,
-                  hyperparam = hyper_list)
-
+out <- FBNP_hyper_alltime(n_iter = 10000,
+                          burnin = 7000,
+                          M = 1000,
+                          mass = 0.5,
+                          smoothing = smoothing_list,
+                          hyperparam = hyper_list)
 
 ### SAVE OUTPUT #### -------------------------------------------------------------------------
 
 save(out, smoothing_list, hyper_list, file = "Last_run.RData")
-
-source("Tools/save_fun.R")
-save_fun(out,'Last_run')
