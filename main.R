@@ -1,8 +1,3 @@
-
-
-setwd('C:/Users/edoar/Desktop/Bayesian statistics/Project/code/Functional-BNP-clustering')
-
-
 rm(list=ls())
 cat("\014")
 
