@@ -20,7 +20,7 @@ Our observed functions are assume to be realizations of random functions that fo
 
 ### Sampling algorithm 
 
-Our sampling algorithm is a Blocked Gibbs sampler presented in 
+The sampling algorithm is a Blocked Gibbs sampler presented in 
 > Ishwaran, H., and James, L.F. (2001). “Gibbs sampling methods for stick-breaking priors”. Journal of the American Statistical Association, 96.453, pp. 161–173.
 
 It is noteworthy that since we consider an hyperprior structure, we will refer to an slightly modified version of the Blocked Gibbs sampler algorithm, taking into account the full conditional for the hyperparameters.
