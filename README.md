@@ -27,7 +27,7 @@ It is noteworthy that since we consider an hyperprior structure, we will refer t
 
 
 ## Repository structure
-The repository is presents the following elements:
+The repository presents the following elements:
 * `main.R`: R-script with all the steps for running the Blocked Gibbs sampler
 * `Tools`: folder containing all the script needed in `main.R`, among whom `FBNP.R` containing a function that implements Gibbs sampler **without hyperpriors** and
      `FBNP_hyper.R` containing a function that implements Gibbs Sampler **with hyperpriors**
