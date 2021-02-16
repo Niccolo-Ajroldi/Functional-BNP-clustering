@@ -10,7 +10,7 @@ The aim of the project is **to implement a functional clustering algorithm in a 
 
 The algorithm and the model will be first tested on simulated data and then on clinical ones.
 
-A short explanation of the model is made in this file, for further details and for a deep mathematical explanation please refer to the [report](link).
+A short explanation of the model is made in this file, for further details and for a deep mathematical explanation please refer to the [report](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/Ajroldi-Bortolotti-Marchionni-Functional-BNP-Clustering.pdf).
 
 The core of the Gibbs Sampler is implemented in the function `FBNP_hyper.R`.
 
@@ -41,7 +41,7 @@ The repository is presents the following elements:
 The file `install.R` provides automatic installation of the required packages.
 
 ### Simulated data
-We simulate 10 trajectories of 3 different Gaussian Processes with different sinusoidal mean operator and a covariance operator coherent with our model (for further details please refer to [report](link)).
+We simulate 10 trajectories of 3 different Gaussian Processes with different sinusoidal mean operator and a covariance operator coherent with our model (for further details please refer to [report](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/Ajroldi-Bortolotti-Marchionni-Functional-BNP-Clustering.pdf)).
 After having conveniently tuned the parameters, our algorithm is able to properly cluster the simulated data with the hyperprior structure, as we can appreciate in the following picture.
 ![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/GP_ind.png)
 
@@ -51,7 +51,7 @@ To reproduce these results just run the scripts `main_GP_exp.R` or `main_GP_inde
 
 ### Clinical data
 Since we work in a univariate setting, we select one of the four components of our functional observations. In particular, we run our algorithm on the right lobe short latency signal and then for the other components.
-For posterior inference on the latent partition please refer to the  [report](link).
+For posterior inference on the latent partition please refer to the  [report](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/Ajroldi-Bortolotti-Marchionni-Functional-BNP-Clustering.pdf).
 ![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
 
 Unfortunately, data are not publicly avaiable and thus were not reported in this repository. 
@@ -61,7 +61,7 @@ Unfortunately, data are not publicly avaiable and thus were not reported in this
 Computation were performed using 
 >  R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
 
-For all the R-packages used in the codes please refer to section Reference in the [report](link).
+For all the R-packages used in the codes please refer to section Reference in the [report](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/Ajroldi-Bortolotti-Marchionni-Functional-BNP-Clustering.pdf).
 
 
 
