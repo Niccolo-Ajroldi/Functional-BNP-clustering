@@ -34,7 +34,7 @@ The repository is presents the following elements:
 * `Posterior inference`: folder contanining the script `main_posterior inference.R` for performing posterior inference for the latent partition and convergence diagnostic and all the script neeeded in the main one
 * `Gaussian process`: folder containing the scripts `main_GP_indep.R` and `main_GP_exp.R` that perform the Blocked Gibbs sampler on the simulated data with diagonal and exponential covariance operator and all the needed script
 * `Alltime`: folder containing `main_alltime.R` that performs the Blocked Gibbs sampler changing the prior structure on the covariance operator, setting a different prior on different time instants
-* `Ajroldi-Bortolotti-Marchionni_Functional-BNP-Clustering.pdf`: report of the project
+* `Ajroldi-Bortolotti-Marchionni-Functional-BNP-Clustering.pdf`: report of the project
 
 ### Installation
 
