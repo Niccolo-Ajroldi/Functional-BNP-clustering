@@ -64,8 +64,8 @@ For all the R-packages used in the codes please refer to section Reference in th
 
 ## Authors
 
-Niccolò Ajroldi - Politecnico di Milano  
-Teresa Bortolotti - Politecnico di Milano 
-Edoardo Marchionni - Politecnico di Milano
+Niccolò Ajroldi - Politecnico di Milano  \
+Teresa Bortolotti - Politecnico di Milano \
+Edoardo Marchionni - Politecnico di Milano \
 (Master of Science in Mathematical engineering students at Politecnico di Milano)
 
