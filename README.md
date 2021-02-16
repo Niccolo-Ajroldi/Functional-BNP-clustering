@@ -49,9 +49,10 @@ After having conveniently tuned the parameters, our algorithm is able to properl
 
 
 ### Clinical data
-Since we work in a univariate setting, we select one of the four components of our functional observations. In particular, we run our algorithm on the right lobe short latency signal and then for the other components
-![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
+Since we work in a univariate setting, we select one of the four components of our functional observations. In particular, we run our algorithm on the right lobe short latency signal and then for the other components.
 For posterior inference on the latent partition please refer to the  [report](link).
+![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/Data_cutted.png)
+
 
 ### References
 Computation were performed using 
