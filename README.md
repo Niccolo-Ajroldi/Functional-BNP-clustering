@@ -20,14 +20,14 @@ Our observed functions are assume to be realizations of random functions that fo
 
 ### Sampling algorithm 
 
-The sampling algorithm is a Blocked Gibbs sampler presented in 
+Our sampling algorithm is a Blocked Gibbs sampler presented in 
 > Ishwaran, H., and James, L.F. (2001). “Gibbs sampling methods for stick-breaking priors”. Journal of the American Statistical Association, 96.453, pp. 161–173.
 
 It is noteworthy that since we consider an hyperprior structure, we will refer to an slightly modified version of the Blocked Gibbs sampler algorithm, taking into account the full conditional for the hyperparameters.
 
 
 ## Repository structure
-The repository presents the following elements:
+The repository is presents the following elements:
 * `main.R`: R-script with all the steps for running the Blocked Gibbs sampler
 * `Tools`: folder containing all the script needed in `main.R`, among whom `FBNP.R` containing a function that implements Gibbs sampler **without hyperpriors** and
      `FBNP_hyper.R` containing a function that implements Gibbs Sampler **with hyperpriors**
@@ -42,7 +42,7 @@ The file `install.R` provides automatic installation of the required packages.
 
 ### Simulated data
 We simulate 10 trajectories of 3 different Gaussian Processes with different sinusoidal mean operator and a covariance operator coherent with our model (for further details please refer to [report](link)).
-After having conveniently tuned the parameters, our algorithm is able to properly cluster the simulated data with the hyperprior structure.
+After having conveniently tuned the parameters, our algorithm is able to properly cluster the simulated data with the hyperprior structure, as we can appreciate in the following picture.
 ![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/GP_ind.png)
 
 
