@@ -6,7 +6,7 @@ The tutor of the project was R. Corradin, PhD.
 
 We were given 26 multivariate functional observation with 4 components, each of which represents a somatosensory evoked potential, i.e. the electrical modifications occurring in the central nervous system following a stimulus, detected within 2 seconds after the stimulus over 1600 instants.
 
-The aim of the project is **to implement a functional clustering algorithm in a Bayesian nonparametric framework** in a univariate setting. In particular, we assume an infinite mixture model for our functional obervations with a Dirichlet Process as mixture distribution. Our aim is to sample from Dirichlet process in order to get a sample of the latent partition induced. A Gibbs sampler is implemented for our purposes.
+The aim of the project is **to implement a functional clustering algorithm in a Bayesian nonparametric framework** in a univariate functional setting. In particular, we assume an infinite mixture model for our functional obervations with a Dirichlet Process as mixture distribution. Our aim is to sample from Dirichlet process in order to get a sample of the latent partition induced. A Gibbs sampler is implemented for our purposes.
 
 The algorithm and the model will be first tested on simulated data and then on clinical ones.
 
