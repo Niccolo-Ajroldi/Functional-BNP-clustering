@@ -45,7 +45,7 @@ We simulate 10 trajectories of 3 different Gaussian Processes with different sin
 After having conveniently tuned the parameters, our algorithm is able to properly cluster the simulated data with the hyperprior structure, as we can appreciate in the following picture.
 ![alt text](https://github.com/Niccolo-Ajroldi/Functional-BNP-clustering/blob/main/pics/GP_ind.png)
 
-To reproduce these results just run the scripts `main_GP_exp.R` and `main_GP_indep.R`.
+To reproduce these results just run the scripts `main_GP_exp.R` or `main_GP_indep.R`.
 
 
 
